@@ -1,16 +1,58 @@
-import time
-import uuid
+import json
+import os
 import random
-from locust import HttpUser, task, between
-from datetime import datetime, timedelta
+import uuid
+import sys
+from datetime import datetime
+from locust import HttpUser, task, between, events
+from locust.exception import StopUser
+
+# Ensure we can import from local utils
+sys.path.append(os.path.dirname(__file__))
+
+try:
+    from utils import get_token
+except ImportError:
+    # If running from root
+    from load_tests.utils import get_token
+
+TENANTS_FILE = os.path.join(os.path.dirname(__file__), "tenants.json")
+
+# Load tenants globally
+TENANTS = []
+if os.path.exists(TENANTS_FILE):
+    with open(TENANTS_FILE, "r") as f:
+        TENANTS = json.load(f)
+
+@events.test_start.add_listener
+def on_test_start(environment, **kwargs):
+    if not TENANTS:
+        print("ERROR: No tenants found in tenants.json. Please run 'python load_tests/setup_tenants.py' first.")
+        environment.runner.quit()
 
 class AuditApiUser(HttpUser):
-    wait_time = between(0.1, 0.5) # Simulate high throughput
+    wait_time = between(0.1, 0.5)
+    host = "http://localhost:8000"  # Set default host
     
     def on_start(self):
+        if not TENANTS:
+            raise StopUser()
+            
         # Pick a tenant for this user session
-        self.tenant_id = f"tenant-{random.randint(1, 100)}"
-        self.headers = {"X-Tenant-ID": self.tenant_id}
+        self.tenant_config = random.choice(TENANTS)
+        self.tenant_id = self.tenant_config["id"]
+        
+        # Authenticate
+        try:
+            self.token = get_token(
+                self.tenant_config["client_id"], 
+                self.tenant_config["client_secret"]
+            )
+            self.headers = {"Authorization": f"Bearer {self.token}"}
+        except Exception as e:
+            print(f"Failed to authenticate tenant {self.tenant_id}: {e}")
+            raise StopUser()
+            
         self.created_events = []
 
     @task(3)
@@ -38,12 +80,16 @@ class AuditApiUser(HttpUser):
         
         with self.client.post("/v1/events", json=payload, headers=self.headers, catch_response=True) as response:
             if response.status_code == 201:
+                data = response.json()
+                # Verify Tenant ID (RLS check)
+                if data.get("tenant_id") != self.tenant_id:
+                     response.failure(f"RLS Violation: Returned tenant_id {data.get('tenant_id')} != {self.tenant_id}")
+                     return
+
                 response.success()
-                # Store for timeline queries
-                if response.json().get("entities"):
-                    self.created_events.append(response.json())
+                if data.get("entities"):
+                    self.created_events.append(data)
             elif response.status_code == 200:
-                # Idempotent success (shouldn't happen much with uuid keys but possible in reuse tests)
                 response.success()
             else:
                 response.failure(f"Create failed: {response.status_code} - {response.text}")
@@ -54,16 +100,44 @@ class AuditApiUser(HttpUser):
         if not self.created_events:
             return
             
-        # Pick a random event and query one of its entities
         event = random.choice(self.created_events)
         if not event.get("entities"):
             return
             
+        # The entities in the response are Pydantic models dumped to dicts
+        # The schema uses validation_alias for 'entity_kind' -> 'kind' in request
+        # But in response (EventRead), entities is List[EntityRead]
+        # EntityRead has: kind = Field(validation_alias="entity_kind")
+        # So when serialized, it might be 'kind' or 'entity_kind' depending on configuration
+        
+        # Let's check what the API returns.
+        # Based on app/schemas/common.py:
+        # class EntityRead(BaseModel):
+        #    kind: str = Field(validation_alias="entity_kind")
+        #    id: str = Field(validation_alias="entity_id")
+        
+        # When serialized by FastAPI/Pydantic, it usually uses the field name ('kind', 'id')
+        
         entity = random.choice(event["entities"])
-        entity_query = f"{entity['entity_kind']}:{entity['entity_id']}"
+        
+        # Helper to get field regardless of alias
+        kind = entity.get("kind") or entity.get("entity_kind")
+        e_id = entity.get("id") or entity.get("entity_id")
+        
+        if not kind or not e_id:
+             return
+
+        entity_query = f"{kind}:{e_id}"
         
         with self.client.get(f"/v1/timeline?entity={entity_query}&limit=10", headers=self.headers, catch_response=True) as response:
             if response.status_code == 200:
+                data = response.json()
+                events = data.get("events", [])
+                # Verify RLS: All events must belong to my tenant
+                for e in events:
+                    if e["tenant_id"] != self.tenant_id:
+                        response.failure(f"RLS Violation in Timeline: Found event for tenant {e['tenant_id']}")
+                        return
                 response.success()
             else:
                 response.failure(f"Timeline failed: {response.status_code} - {response.text}")
@@ -76,14 +150,8 @@ class AuditApiUser(HttpUser):
 
         event = random.choice(self.created_events)
         
-        # Construct payload matching the original event to ensure hash matches
-        # Note: This is tricky in load tests because we need exact same payload.
-        # For simplicity, we'll rely on the fact that if we use the same key,
-        # we expect 200 OK (if we can reconstruct payload) or 409 (if we change it).
-        # Let's try to send a conflict to stress the hash check.
-        
         payload = {
-            "idempotency_key": event["idempotency_key"], # Reuse key
+            "idempotency_key": event["idempotency_key"],
             "occurred_at": datetime.utcnow().isoformat() + "Z", # New time -> Hash mismatch!
             "type": "retry.attempt",
             "actor": { "kind": "bot", "id": "retry-bot" },
@@ -93,11 +161,8 @@ class AuditApiUser(HttpUser):
         
         with self.client.post("/v1/events", json=payload, headers=self.headers, catch_response=True) as response:
             if response.status_code == 409:
-                response.success() # Expected conflict
+                response.success()
             elif response.status_code == 200:
                  response.failure("Should have been 409 conflict")
             else:
-                 # It might be 201 if the original event wasn't actually saved (e.g. valid first time seen by this worker)
-                 # But we picked from self.created_events, so it should exist.
                  response.failure(f"Idempotency check failed: {response.status_code}")
-

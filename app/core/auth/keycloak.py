@@ -17,6 +17,7 @@ class KeycloakProvider(IdPProvider):
             username=self.admin_username,
             password=self.admin_password,
             realm_name=self.realm_name,
+            user_realm_name="master",  # Admin user is in master realm
             verify=True
         )
 

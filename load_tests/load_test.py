@@ -3,16 +3,44 @@ import httpx
 import time
 import uuid
 import random
+import json
+import os
+import sys
 from datetime import datetime
 
+# Ensure we can import from local utils
+sys.path.append(os.path.dirname(__file__))
+
+try:
+    from utils import get_token
+except ImportError:
+    from load_tests.utils import get_token
+
 # Configuration
-API_URL = "http://localhost:8000/v1/events"
-NUM_REQUESTS = 1000  # Total requests to send
-CONCURRENCY = 50     # Number of concurrent workers
-TENANTS = ["tenant-A", "tenant-B", "tenant-C"]
+API_URL = os.getenv("API_URL", "http://localhost:8000/v1/events")
+NUM_REQUESTS = 1000
+CONCURRENCY = 50
 EVENT_TYPES = ["user.created", "invoice.paid", "order.shipped", "page.viewed"]
 
-async def send_event(client, tenant_id):
+TENANTS_FILE = os.path.join(os.path.dirname(__file__), "tenants.json")
+
+def load_tenants():
+    if not os.path.exists(TENANTS_FILE):
+        print("Tenants file not found. Please run setup_tenants.py first.")
+        return []
+    with open(TENANTS_FILE, "r") as f:
+        return json.load(f)
+
+async def send_event(client, tenant_config):
+    # Get token (synchronously, assuming cached mostly)
+    try:
+        # Note: get_token is synchronous (uses requests), which blocks the event loop.
+        # In a real high-perf async app, we should use an async auth client.
+        # For this test script, it's acceptable if cached, but ideally we'd offload to thread.
+        token = get_token(tenant_config["client_id"], tenant_config["client_secret"])
+    except Exception as e:
+        return "AuthError", 0, str(e)
+
     event_id = str(uuid.uuid4())
     payload = {
         "idempotency_key": f"req-{event_id}",
@@ -32,36 +60,45 @@ async def send_event(client, tenant_id):
         response = await client.post(
             API_URL, 
             json=payload, 
-            headers={"X-Tenant-ID": tenant_id}
+            headers={"Authorization": f"Bearer {token}"}
         )
         duration = time.time() - start_time
+        
         if response.status_code not in (200, 201):
             return response.status_code, duration, response.text
+            
+        # Optional: Check RLS (if API returns tenant_id)
+        data = response.json()
+        if data.get("tenant_id") and data.get("tenant_id") != tenant_config["id"]:
+             return "RLS_FAIL", duration, f"Got {data.get('tenant_id')} expected {tenant_config['id']}"
+
         return response.status_code, duration, None
     except Exception as e:
         return "Exception", time.time() - start_time, str(e)
 
-async def worker(queue, client, results, errors):
+async def worker(queue, client, results, errors, tenants):
     while True:
         try:
-            # Get a "token" from the queue
             _ = queue.get_nowait()
         except asyncio.QueueEmpty:
             break
         
-        tenant_id = random.choice(TENANTS)
-        status, duration, error_detail = await send_event(client, tenant_id)
+        tenant = random.choice(tenants)
+        status, duration, error_detail = await send_event(client, tenant)
         results.append((status, duration))
         if error_detail:
             errors.append((status, error_detail))
         queue.task_done()
 
 async def run_load_test():
+    tenants = load_tenants()
+    if not tenants:
+        return
+
     queue = asyncio.Queue()
     results = []
     errors = []
     
-    # Fill queue with tasks
     for _ in range(NUM_REQUESTS):
         queue.put_nowait(1)
         
@@ -69,7 +106,7 @@ async def run_load_test():
     start_total = time.time()
     
     async with httpx.AsyncClient(limits=httpx.Limits(max_keepalive_connections=CONCURRENCY, max_connections=CONCURRENCY), timeout=30.0) as client:
-        workers = [asyncio.create_task(worker(queue, client, results, errors)) for _ in range(CONCURRENCY)]
+        workers = [asyncio.create_task(worker(queue, client, results, errors, tenants)) for _ in range(CONCURRENCY)]
         await queue.join()
         for w in workers:
             w.cancel()

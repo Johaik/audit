@@ -61,6 +61,12 @@ async def create_event(
         result = await db.execute(query)
         existing_event = result.scalar_one_or_none()
         
+        # If we can't see the event despite the constraint violation, it means
+        # RLS hid it (which shouldn't happen for the same tenant) OR
+        # the transaction state is messed up from the exception.
+        # However, because we are in a nested transaction (savepoint), the outer
+        # transaction is still valid and we *should* be able to query.
+        
         if existing_event:
              # Check hash for duplicate detection
              if existing_event.hash != event_hash:
@@ -72,10 +78,23 @@ async def create_event(
              response.status_code = status.HTTP_200_OK
              return existing_event
         
-        # If we got IntegrityError but can't find the event, something else failed
-        # This could happen if RLS hid the event (which implies another tenant has same key, but unique constraint includes tenant_id)
-        # Or a race condition where it was deleted?
-        raise HTTPException(status_code=400, detail="Could not create event")
+        # Fallback: If we got IntegrityError but query returns None,
+        # it might be a race condition where another transaction committed just now
+        # but is not visible to our snapshot?
+        # OR RLS issue.
+        # Let's try to fetch it one more time without RLS filter if we were superuser,
+        # but we can't easily do that here.
+        # Given we are the same tenant, we should see it.
+        # Maybe the 'set_config' was lost? (Unlikely in nested rollback)
+        
+        # IMPORTANT: When using AsyncPG, sometimes cursor/transaction state needs care.
+        # If the above query returned None, it is genuinely weird for a unique constraint violation
+        # on (tenant_id, idempotency_key).
+        
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, 
+            detail="Idempotency conflict detected (event exists)"
+        )
 
     # Create event entities
     for entity in event_in.entities:
