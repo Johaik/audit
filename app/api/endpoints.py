@@ -6,6 +6,8 @@ from sqlalchemy.exc import IntegrityError
 from typing import Optional, List
 from datetime import datetime
 import uuid
+import hashlib
+import json
 
 from app.database import get_db
 from app.models import Event, EventEntity
@@ -14,6 +16,13 @@ from app.api.deps import get_current_tenant
 
 router = APIRouter()
 
+def calculate_hash(event_in: EventCreate) -> str:
+    # Canonicalize payload for hashing
+    payload_str = json.dumps(event_in.payload, sort_keys=True)
+    # Include critical fields
+    data = f"{event_in.occurred_at.isoformat()}|{event_in.type}|{event_in.actor.kind}|{event_in.actor.id}|{payload_str}"
+    return hashlib.sha256(data.encode()).hexdigest()
+
 @router.post("/events", response_model=EventRead, status_code=status.HTTP_201_CREATED)
 async def create_event(
     event_in: EventCreate,
@@ -21,36 +30,20 @@ async def create_event(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant)
 ):
-    # Idempotency check
-    query = select(Event).options(selectinload(Event.entities)).where(
-        Event.tenant_id == tenant_id,
-        Event.idempotency_key == event_in.idempotency_key
-    )
-    result = await db.execute(query)
-    existing_event = result.scalar_one_or_none()
+    # Calculate hash if not provided
+    event_hash = event_in.hash or calculate_hash(event_in)
 
-    if existing_event:
-        # Check if payloads match (simplified check)
-        if existing_event.type != event_in.type or \
-           existing_event.actor != event_in.actor.model_dump() or \
-           existing_event.payload != event_in.payload:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Idempotency key exists but body does not match"
-            )
-        
-        response.status_code = status.HTTP_200_OK
-        return existing_event
-
-    # Create new event
+    # Optimistic insertion (Create new event first, handle conflict later)
     new_event = Event(
         tenant_id=tenant_id,
         occurred_at=event_in.occurred_at,
         type=event_in.type,
-        actor=event_in.actor.model_dump(),
+        actor_kind=event_in.actor.kind,
+        actor_id=event_in.actor.id,
         trace=event_in.trace.model_dump() if event_in.trace else None,
         payload=event_in.payload,
-        idempotency_key=event_in.idempotency_key
+        idempotency_key=event_in.idempotency_key,
+        hash=event_hash
     )
     
     db.add(new_event)
@@ -60,24 +53,37 @@ async def create_event(
         await db.flush()
     except IntegrityError:
         await db.rollback()
-        # Race condition handling for idempotency
+        # Race condition / Idempotency handling
+        # Idempotency key exists
         query = select(Event).options(selectinload(Event.entities)).where(
             Event.tenant_id == tenant_id,
             Event.idempotency_key == event_in.idempotency_key
         )
         result = await db.execute(query)
         existing_event = result.scalar_one_or_none()
+        
         if existing_event:
+             # Check hash for duplicate detection
+             if existing_event.hash != event_hash:
+                 raise HTTPException(
+                     status_code=status.HTTP_409_CONFLICT,
+                     detail="Idempotency key exists but parameters do not match (hash mismatch)"
+                 )
+             
              response.status_code = status.HTTP_200_OK
              return existing_event
+        
+        # If we got IntegrityError but can't find the event, something else failed or race condition was weird
         raise HTTPException(status_code=400, detail="Could not create event")
 
     # Create event entities
     for entity in event_in.entities:
         db.add(EventEntity(
+            tenant_id=tenant_id,
             event_id=new_event.event_id,
             entity_kind=entity.kind,
-            entity_id=entity.id
+            entity_id=entity.id,
+            occurred_at=event_in.occurred_at # Denormalized
         ))
 
     await db.commit()
@@ -102,25 +108,40 @@ async def get_timeline(
     except ValueError:
         raise HTTPException(status_code=400, detail="Entity must be in format kind:id")
 
+    # Use EventEntity to drive the sort order efficiently using the index
+    # (tenant_id, entity_kind, entity_id, occurred_at desc, event_id desc)
+    
+    # We select Event but join EventEntity. 
+    # To strictly use the index for sorting, we should order by EventEntity.occurred_at
     query = (
         select(Event)
         .options(selectinload(Event.entities))
         .join(EventEntity, Event.event_id == EventEntity.event_id)
         .where(
-            Event.tenant_id == tenant_id,
+            EventEntity.tenant_id == tenant_id, # Redundant but helps index usage if partition key
             EventEntity.entity_kind == kind,
             EventEntity.entity_id == entity_id
         )
-        .order_by(desc(Event.occurred_at))
+        .order_by(desc(EventEntity.occurred_at), desc(EventEntity.event_id))
         .limit(limit)
     )
     
     if cursor:
         try:
             # Simple cursor implementation using occurred_at timestamp
-            cursor_dt = datetime.fromisoformat(cursor)
-            query = query.where(Event.occurred_at < cursor_dt)
-        except ValueError:
+            # Handle space replacing + (common URL decoding issue) or missing timezone logic
+            # The cursor comes from isoformat(), which might be like '2025-01-01T12:00:00+00:00'
+            # If passed in query param, + might become space if not encoded properly by client,
+            # but usually httpx handles this. Let's be robust.
+            cursor_cleaned = cursor.replace(" ", "+")
+            if cursor_cleaned.endswith("Z"):
+                 cursor_cleaned = cursor_cleaned.replace("Z", "+00:00")
+            
+            cursor_dt = datetime.fromisoformat(cursor_cleaned)
+            query = query.where(EventEntity.occurred_at < cursor_dt)
+        except ValueError as e:
+            # Log error for debugging if needed
+            print(f"Cursor parse error: {e}, cursor: {cursor}")
             raise HTTPException(status_code=400, detail="Invalid cursor format")
 
     result = await db.execute(query)
@@ -162,8 +183,8 @@ async def list_events(
         query = query.where(Event.type == type)
     
     if actor_id:
-        # Assuming actor is stored as JSONB, we can query by id inside actor object
-        query = query.where(Event.actor['id'].astext == actor_id)
+        # Now using flat column
+        query = query.where(Event.actor_id == actor_id)
 
     if cursor:
         try:

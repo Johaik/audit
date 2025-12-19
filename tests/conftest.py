@@ -35,13 +35,27 @@ async def setup_db():
 
 @pytest.fixture
 async def db_session():
+    """
+    Standalone session for test assertions/setup.
+    """
     async with TestingSessionLocal() as session:
         yield session
 
 @pytest.fixture
-async def client(db_session):
+async def client():
+    """
+    Client that spawns a new DB session for each request (mimics production).
+    """
     async def override_get_db():
-        yield db_session
+        async with TestingSessionLocal() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+            finally:
+                await session.close()
 
     app.dependency_overrides[get_db] = override_get_db
     
@@ -49,4 +63,3 @@ async def client(db_session):
         yield ac
     
     app.dependency_overrides.clear()
-

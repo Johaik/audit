@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, model_validator
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from uuid import UUID
@@ -29,16 +29,32 @@ class EventBase(BaseModel):
     trace: Optional[Trace] = None
     payload: Dict[str, Any]
     occurred_at: datetime
+    # hash is optional in input, but we might calculate it
+    hash: Optional[str] = None
 
 class EventCreate(EventBase):
     idempotency_key: str
 
-class EventRead(EventBase):
+class EventRead(BaseModel):
     event_id: UUID
     tenant_id: str
+    occurred_at: datetime
     ingested_at: datetime
+    type: str
+    actor_kind: str
+    actor_id: str
+    actor: Actor 
+    
+    payload: Dict[str, Any]
+    trace: Optional[Dict[str, Any]] = None # Trace stored as JSONB
     idempotency_key: str
-    entities: List[EntityRead] # Use EntityRead for output to handle DB mapping
+    hash: str
+    entities: List[EntityRead]
+
+    @model_validator(mode='before')
+    @classmethod
+    def assemble_actor(cls, data: Any) -> Any:
+        return data
 
     class Config:
         from_attributes = True
