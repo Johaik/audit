@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: audit_user
+      POSTGRES_PASSWORD: audit_password
+      POSTGRES_DB: audit_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
