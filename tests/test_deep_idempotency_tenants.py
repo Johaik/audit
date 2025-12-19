@@ -3,7 +3,7 @@ from httpx import AsyncClient
 import asyncio
 
 @pytest.mark.anyio
-async def test_tenant_isolation_idempotency(client: AsyncClient):
+async def test_tenant_isolation_idempotency(client: AsyncClient, auth_headers):
     """
     Test that the same idempotency key can be used across different tenants
     without conflict.
@@ -18,13 +18,13 @@ async def test_tenant_isolation_idempotency(client: AsyncClient):
     }
 
     # Tenant A
-    headers_a = {"X-Tenant-ID": "tenant-A"}
+    headers_a = auth_headers("tenant-A")
     resp_a = await client.post("/v1/events", json=payload, headers=headers_a)
     assert resp_a.status_code == 201
     event_a_id = resp_a.json()["event_id"]
 
     # Tenant B (same payload, same key)
-    headers_b = {"X-Tenant-ID": "tenant-B"}
+    headers_b = auth_headers("tenant-B")
     resp_b = await client.post("/v1/events", json=payload, headers=headers_b)
     assert resp_b.status_code == 201
     event_b_id = resp_b.json()["event_id"]
@@ -33,7 +33,7 @@ async def test_tenant_isolation_idempotency(client: AsyncClient):
     assert event_a_id != event_b_id
 
 @pytest.mark.anyio
-async def test_tenant_data_isolation(client: AsyncClient):
+async def test_tenant_data_isolation(client: AsyncClient, auth_headers):
     """
     Test that queries for one tenant do not return data for another.
     """
@@ -56,23 +56,23 @@ async def test_tenant_data_isolation(client: AsyncClient):
     }
 
     # Create events
-    await client.post("/v1/events", json=payload_a, headers={"X-Tenant-ID": "tenant-A"})
-    await client.post("/v1/events", json=payload_b, headers={"X-Tenant-ID": "tenant-B"})
+    await client.post("/v1/events", json=payload_a, headers=auth_headers("tenant-A"))
+    await client.post("/v1/events", json=payload_b, headers=auth_headers("tenant-B"))
 
     # Query Timeline for Tenant A
-    resp = await client.get("/v1/timeline?entity=thing:t1", headers={"X-Tenant-ID": "tenant-A"})
+    resp = await client.get("/v1/timeline?entity=thing:t1", headers=auth_headers("tenant-A"))
     data = resp.json()
     assert len(data["events"]) == 1
     assert data["events"][0]["type"] == "event.a"
 
     # Query Timeline for Tenant B
-    resp = await client.get("/v1/timeline?entity=thing:t1", headers={"X-Tenant-ID": "tenant-B"})
+    resp = await client.get("/v1/timeline?entity=thing:t1", headers=auth_headers("tenant-B"))
     data = resp.json()
     assert len(data["events"]) == 1
     assert data["events"][0]["type"] == "event.b"
 
 @pytest.mark.anyio
-async def test_concurrent_idempotency_race(client: AsyncClient):
+async def test_concurrent_idempotency_race(client: AsyncClient, auth_headers):
     """
     Simulate concurrent requests with the same idempotency key for the same tenant.
     Only one should return 201, the other 200 (or both 200/201 depending on timing, 
@@ -86,7 +86,7 @@ async def test_concurrent_idempotency_race(client: AsyncClient):
         "entities": [],
         "payload": { "race": True }
     }
-    headers = {"X-Tenant-ID": "tenant-race"}
+    headers = auth_headers("tenant-race")
 
     async def make_request():
         return await client.post("/v1/events", json=payload, headers=headers)
@@ -112,11 +112,11 @@ async def test_concurrent_idempotency_race(client: AsyncClient):
     assert len(event_ids) == 1
 
 @pytest.mark.anyio
-async def test_idempotency_hash_mismatch_details(client: AsyncClient):
+async def test_idempotency_hash_mismatch_details(client: AsyncClient, auth_headers):
     """
     Verify exact behavior when hash mismatches on an existing idempotency key.
     """
-    headers = {"X-Tenant-ID": "tenant-hash"}
+    headers = auth_headers("tenant-hash")
     key = "hash-key-1"
     
     # Initial Event

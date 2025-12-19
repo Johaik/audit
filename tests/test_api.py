@@ -8,7 +8,7 @@ async def test_health_check(client: AsyncClient):
     assert response.json() == {"status": "ok"}
 
 @pytest.mark.anyio
-async def test_create_event(client: AsyncClient):
+async def test_create_event(client: AsyncClient, auth_headers):
     payload = {
         "idempotency_key": "test-req-1",
         "occurred_at": "2025-12-19T10:11:12Z",
@@ -19,7 +19,7 @@ async def test_create_event(client: AsyncClient):
         ],
         "payload": { "email": "test@example.com" }
     }
-    headers = {"X-Tenant-ID": "tenant-A"}
+    headers = auth_headers("tenant-A")
     
     response = await client.post("/v1/events", json=payload, headers=headers)
     assert response.status_code == 201
@@ -28,7 +28,7 @@ async def test_create_event(client: AsyncClient):
     assert data["tenant_id"] == "tenant-A"
 
 @pytest.mark.anyio
-async def test_idempotency_same_payload(client: AsyncClient):
+async def test_idempotency_same_payload(client: AsyncClient, auth_headers):
     payload = {
         "idempotency_key": "test-req-2",
         "occurred_at": "2025-12-19T10:11:12Z",
@@ -37,7 +37,7 @@ async def test_idempotency_same_payload(client: AsyncClient):
         "entities": [],
         "payload": { "amount": 50 }
     }
-    headers = {"X-Tenant-ID": "tenant-A"}
+    headers = auth_headers("tenant-A")
 
     # First request
     resp1 = await client.post("/v1/events", json=payload, headers=headers)
@@ -49,8 +49,8 @@ async def test_idempotency_same_payload(client: AsyncClient):
     assert resp2.json()["event_id"] == resp1.json()["event_id"]
 
 @pytest.mark.anyio
-async def test_idempotency_conflict(client: AsyncClient):
-    headers = {"X-Tenant-ID": "tenant-A"}
+async def test_idempotency_conflict(client: AsyncClient, auth_headers):
+    headers = auth_headers("tenant-A")
     key = "test-req-3"
     
     payload1 = {
@@ -71,8 +71,8 @@ async def test_idempotency_conflict(client: AsyncClient):
     assert response.status_code == 409
 
 @pytest.mark.anyio
-async def test_get_timeline(client: AsyncClient):
-    headers = {"X-Tenant-ID": "tenant-A"}
+async def test_get_timeline(client: AsyncClient, auth_headers):
+    headers = auth_headers("tenant-A")
     
     # Create event for timeline
     event_payload = {
@@ -95,8 +95,8 @@ async def test_get_timeline(client: AsyncClient):
     assert data["events"][0]["type"] == "doc.signed"
 
 @pytest.mark.anyio
-async def test_query_events_filter(client: AsyncClient):
-    headers = {"X-Tenant-ID": "tenant-B"}
+async def test_query_events_filter(client: AsyncClient, auth_headers):
+    headers = auth_headers("tenant-B")
     
     # Create events
     await client.post("/v1/events", json={

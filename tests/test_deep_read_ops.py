@@ -4,13 +4,13 @@ import asyncio
 from datetime import datetime, timedelta
 
 @pytest.mark.anyio
-async def test_timeline_ordering_and_pagination(client: AsyncClient):
+async def test_timeline_ordering_and_pagination(client: AsyncClient, auth_headers):
     """
     Test that timeline returns events in correct order (descending occurred_at)
     and pagination works correctly.
     """
     tenant_id = "tenant-timeline-1"
-    headers = {"X-Tenant-ID": tenant_id}
+    headers = auth_headers(tenant_id)
     entity = { "kind": "order", "id": "ord-1" }
     
     # Create 5 events with different timestamps
@@ -59,11 +59,11 @@ async def test_timeline_ordering_and_pagination(client: AsyncClient):
     assert data["next_cursor"] is None
 
 @pytest.mark.anyio
-async def test_timeline_mixed_entities(client: AsyncClient):
+async def test_timeline_mixed_entities(client: AsyncClient, auth_headers):
     """
     Verify timeline only shows events for the requested entity.
     """
-    headers = {"X-Tenant-ID": "tenant-timeline-2"}
+    headers = auth_headers("tenant-timeline-2")
     
     # Event 1: Linked to User A
     await client.post("/v1/events", json={
@@ -110,11 +110,11 @@ async def test_timeline_mixed_entities(client: AsyncClient):
     assert events_b[1]["type"] == "user.update"
 
 @pytest.mark.anyio
-async def test_events_list_filtering(client: AsyncClient):
+async def test_events_list_filtering(client: AsyncClient, auth_headers):
     """
     Test filtering the main events list (by type, actor, etc).
     """
-    headers = {"X-Tenant-ID": "tenant-events-1"}
+    headers = auth_headers("tenant-events-1")
     
     # Setup data
     events = [
