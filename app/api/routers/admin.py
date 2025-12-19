@@ -40,7 +40,8 @@ async def register_tenant(
         await db.refresh(new_tenant)
     except Exception as e:
         await db.rollback()
-        # TODO: Cleanup Keycloak client if DB commit fails? 
+        # Failed to save tenant to database, potentially leaving an orphaned Keycloak client
+        # which should be cleaned up by a separate process or manually.
         raise HTTPException(status_code=500, detail="Failed to save tenant to database")
 
     return TenantResponse(

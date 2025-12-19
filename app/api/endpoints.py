@@ -8,6 +8,7 @@ from datetime import datetime
 import uuid
 import hashlib
 import json
+import logging
 
 from app.models import Event, EventEntity
 from app.schemas.common import EventCreate, EventRead, TimelineResponse
@@ -163,7 +164,7 @@ async def get_timeline(
             query = query.where(EventEntity.occurred_at < cursor_dt)
         except ValueError as e:
             # Log error for debugging if needed
-            print(f"Cursor parse error: {e}, cursor: {cursor}")
+            logging.getLogger(__name__).warning(f"Cursor parse error: {e}, cursor: {cursor}")
             raise HTTPException(status_code=400, detail="Invalid cursor format")
 
     result = await db.execute(query)

@@ -111,14 +111,18 @@ graph TD
     The API will be available at `http://localhost:8000`.
 
 ### Configuration
-Configuration is managed via environment variables (see `app/config.py`). Default values work for local development.
+Configuration is managed via environment variables. Copy `env.example` to `.env` and adjust as needed.
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | App connection string (RLS user) | `postgresql+asyncpg://audit_app...@localhost:5433/audit_db` |
-| `ADMIN_DATABASE_URL` | Admin connection string (Owner) | `postgresql+asyncpg://audit_admin...@localhost:5433/audit_db` |
-| `KEYCLOAK_URL` | Keycloak internal URL | `http://localhost:8080` |
-| `ADMIN_API_KEY` | Key for internal admin routes | `dev-admin-key` |
+```bash
+cp env.example .env
+```
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | App connection string (RLS user) |
+| `ADMIN_DATABASE_URL` | Admin connection string (Owner) |
+| `KEYCLOAK_URL` | Keycloak internal URL |
+| `ADMIN_API_KEY` | Key for internal admin routes |
 
 ## 6. How It Works
 

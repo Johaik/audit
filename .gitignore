@@ -1,32 +1,16 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Virtual Environment
 venv/
-.venv/
-env/
-
-# Environment variables
+__pycache__/
+*.pyc
 .env
-
-# Testing
+.DS_Store
 .pytest_cache/
-.coverage
+postgres_data/
+keycloak_postgres_data/
+coverage/
 htmlcov/
-
-# Distribution / Packaging
 dist/
 build/
 *.egg-info/
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# IDEs
 .idea/
 .vscode/
-*.swp
-
+tenants.json

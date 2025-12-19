@@ -3,11 +3,14 @@ from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from typing import Dict, Any
+import logging
 
 from app.config import settings
 from app.database import get_db
 from app.core.auth.keycloak import KeycloakProvider
 from app.core.auth.idp import IdPProvider
+
+logger = logging.getLogger(__name__)
 
 # Admin Security
 admin_api_key_header = APIKeyHeader(name="X-Admin-Key", auto_error=False)
@@ -63,7 +66,7 @@ async def get_db_with_context(
             {"tenant_id": tenant_id}
         )
     except Exception as e:
-        print(f"DEBUG: SET LOCAL FAILED: {e}") # Print to stdout for test debugging
+        logger.error(f"DEBUG: SET LOCAL FAILED: {e}")
         raise HTTPException(status_code=500, detail="Failed to set tenant context")
     
     yield db
