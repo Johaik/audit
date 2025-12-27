@@ -62,7 +62,7 @@ async def get_db_with_context(
     try:
         # Use set_config for safer variable setting
         await db.execute(
-            text("SELECT set_config('app.tenant_id', :tenant_id, false)"), 
+            text("SELECT set_config('app.tenant_id', :tenant_id, true)"), 
             {"tenant_id": tenant_id}
         )
     except Exception as e:
