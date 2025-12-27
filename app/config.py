@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     KEYCLOAK_REALM: str = "audit-realm"
     KEYCLOAK_ADMIN_USER: str = "admin"
     KEYCLOAK_ADMIN_PASSWORD: str
+    KEYCLOAK_AUDIENCE: str
     
     # Admin Security
     ADMIN_API_KEY: str

@@ -114,7 +114,7 @@ async def create_event(
     # Actually, commit() ends the transaction and thus the SET LOCAL.
     # So we MUST re-apply it for the fetch query.
     await db.execute(
-        text("SELECT set_config('app.tenant_id', :tenant_id, false)"), 
+        text("SELECT set_config('app.tenant_id', :tenant_id, true)"), 
         {"tenant_id": tenant_id}
     )
 
