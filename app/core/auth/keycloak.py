@@ -28,6 +28,7 @@ class KeycloakProvider(IdPProvider):
             realm_name=self.realm_name,
             verify=True
         )
+        self._public_key = None
 
     def create_tenant_client(self, tenant_id: str, tenant_name: str) -> Dict[str, str]:
         """
@@ -88,9 +89,11 @@ class KeycloakProvider(IdPProvider):
         Fetches the public key from Keycloak realm.
         Formatted as PEM.
         """
-        key_info = self.keycloak_openid.public_key()
-        # Keycloak returns the raw b64 key, we need to wrap it in PEM headers
-        return f"-----BEGIN PUBLIC KEY-----\n{key_info}\n-----END PUBLIC KEY-----"
+        if self._public_key is None:
+            key_info = self.keycloak_openid.public_key()
+            # Keycloak returns the raw b64 key, we need to wrap it in PEM headers
+            self._public_key = f"-----BEGIN PUBLIC KEY-----\n{key_info}\n-----END PUBLIC KEY-----"
+        return self._public_key
 
     def validate_token(self, token: str) -> Dict[str, Any]:
         """
