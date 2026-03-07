@@ -73,7 +73,7 @@ async def test_admin_register_tenant_idp_failure_rollback(client: AsyncClient, d
     assert row is None
 
 @pytest.mark.asyncio
-async def test_admin_auth_failure(client: AsyncClient):
+async def test_admin_auth_failure(client: AsyncClient, db_session, mock_idp):
     """
     Test admin API security.
     """
@@ -86,6 +86,14 @@ async def test_admin_auth_failure(client: AsyncClient):
     # Wrong Key
     response = await client.post("/admin/tenants", json=payload, headers={"X-Admin-Key": "wrong-key"})
     assert response.status_code == 403
+
+    # Verify no tenant was created in DB
+    result = await db_session.execute(text("SELECT * FROM tenants WHERE name = 'Hacker Tenant'"))
+    row = result.fetchone()
+    assert row is None
+
+    # Verify no tenant was created in IdP
+    assert len(mock_idp.tenants) == 0
 
 @pytest.mark.asyncio
 async def test_rls_isolation_create_and_read(client: AsyncClient, mock_idp):
