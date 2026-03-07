@@ -122,6 +122,7 @@ cp env.example .env
 | `DATABASE_URL` | App connection string (RLS user) |
 | `ADMIN_DATABASE_URL` | Admin connection string (Owner) |
 | `KEYCLOAK_URL` | Keycloak internal URL |
+| `KEYCLOAK_AUDIENCE` | Expected JWT `aud` claim for API access |
 | `ADMIN_API_KEY` | Key for internal admin routes |
 
 ## 6. How It Works
@@ -250,4 +251,3 @@ locust -f load_tests/locustfile.py
 *   **Webhooks:** Trigger external webhooks on specific event types.
 *   **UI Console:** A frontend for admins to browse logs.
 *   **Signature Verification:** Sign event hashes with a private key for non-repudiation.
-

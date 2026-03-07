@@ -97,22 +97,19 @@ class KeycloakProvider(IdPProvider):
         Validates JWT signature against Keycloak public key.
         """
         public_key = self.get_public_key()
-        
+
         options = {
             "verify_signature": True,
-            "verify_aud": False, # 'aud' might be 'account' or the client_id, we need to check custom aud if set
+            "verify_aud": True,
             "exp": True
         }
-        
-        # We might want to enforce 'aud' matches 'audit-api' if we configure it that way
-        # For MVP, we trust the signature and the realm.
-        
+
         decoded = jwt.decode(
             token,
             public_key,
             algorithms=["RS256"],
-            options=options
+            options=options,
+            audience=settings.KEYCLOAK_AUDIENCE,
         )
-        
-        return decoded
 
+        return decoded
