@@ -28,6 +28,29 @@ async def test_create_event(client: AsyncClient, auth_headers):
     assert data["tenant_id"] == "tenant-A"
 
 @pytest.mark.anyio
+async def test_create_event_with_trace(client: AsyncClient, auth_headers):
+    payload = {
+        "idempotency_key": "test-trace-req-1",
+        "occurred_at": "2025-12-19T10:11:12Z",
+        "type": "user.created",
+        "actor": { "kind": "admin", "id": "admin-1" },
+        "entities": [
+            { "kind": "user", "id": "u-100" }
+        ],
+        "trace": {
+            "trace_id": "t-123",
+            "request_id": "r-456"
+        },
+        "payload": { "email": "test@example.com" }
+    }
+    headers = auth_headers("tenant-A")
+
+    response = await client.post("/v1/events", json=payload, headers=headers)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["trace"] == {"trace_id": "t-123", "request_id": "r-456"}
+
+@pytest.mark.anyio
 async def test_idempotency_same_payload(client: AsyncClient, auth_headers):
     payload = {
         "idempotency_key": "test-req-2",
