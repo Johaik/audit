@@ -7,7 +7,7 @@ if docker-compose ps --services --filter "status=running" | grep -q .; then
     echo "Docker services are already running."
 else
     echo "Starting Docker services..."
-    docker-compose up -d
+    docker compose up -d
     echo "Waiting for services to be ready..."
     # Simple wait (could be improved with healthchecks)
     sleep 5

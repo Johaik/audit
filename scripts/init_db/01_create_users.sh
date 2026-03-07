@@ -3,7 +3,7 @@ set -e
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     -- Create application user
-    CREATE USER ${APP_DB_USER:-audit_app} WITH PASSWORD '${APP_DB_PASSWORD:-audit_app_password}';
+    CREATE USER ${APP_DB_USER:-audit_app} WITH PASSWORD '${APP_DB_PASSWORD}';
     
     -- Grant permissions to app user
     -- Note: Schema might not exist yet if created by Alembic later.
