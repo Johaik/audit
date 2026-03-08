@@ -1,4 +1,5 @@
 from fastapi import Header, HTTPException, Security, Depends, status
+from fastapi.concurrency import run_in_threadpool
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
@@ -36,8 +37,9 @@ async def verify_jwt(
     idp: IdPProvider = Depends(get_idp_provider)
 ) -> Dict[str, Any]:
     try:
-        # In a real app, we should cache the public key
-        payload = idp.validate_token(token)
+        # Run synchronous Keycloak and JWT decode logic in a threadpool
+        # to prevent blocking the async event loop
+        payload = await run_in_threadpool(idp.validate_token, token)
         return payload
     except Exception as e:
         raise HTTPException(
