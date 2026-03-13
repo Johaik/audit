@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import verify_admin_key, get_idp_provider
 from app.schemas.admin import TenantCreate, TenantResponse
@@ -6,6 +7,8 @@ from app.models import Tenant
 from app.database import get_db
 from app.core.auth.idp import IdPProvider
 import uuid
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -32,7 +35,8 @@ async def register_tenant(
     except Exception as e:
         # If IdP provisioning fails, we shouldn't commit the DB record
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to provision IdP: {str(e)}")
+        logger.exception("Failed to provision IdP")
+        raise HTTPException(status_code=500, detail="Failed to provision IdP")
 
     # 4. Commit DB
     try:
