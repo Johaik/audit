@@ -127,6 +127,20 @@ async def test_get_timeline(client: AsyncClient, auth_headers):
     assert data["events"][0]["type"] == "doc.signed"
 
 @pytest.mark.anyio
+async def test_list_events_invalid_cursor(client: AsyncClient, auth_headers):
+    headers = auth_headers("tenant-A")
+    response = await client.get("/v1/events?cursor=invalid", headers=headers)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid cursor format"
+
+@pytest.mark.anyio
+async def test_get_timeline_invalid_cursor(client: AsyncClient, auth_headers):
+    headers = auth_headers("tenant-A")
+    response = await client.get("/v1/timeline?entity=document:doc-55&cursor=invalid", headers=headers)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid cursor format"
+
+@pytest.mark.anyio
 async def test_query_events_filter(client: AsyncClient, auth_headers):
     headers = auth_headers("tenant-B")
     
