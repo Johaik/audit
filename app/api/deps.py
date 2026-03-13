@@ -41,12 +41,18 @@ async def verify_jwt(
         # to prevent blocking the async event loop
         payload = await run_in_threadpool(idp.validate_token, token)
         return payload
-    except Exception as e:
-        logger.exception("JWT validation failed")
+    except ValueError as e:
+        logger.warning(f"JWT validation failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
+        )
+    except Exception:
+        logger.exception("Unexpected error during JWT validation")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error during authentication",
         )
 
 async def get_current_tenant_id(
