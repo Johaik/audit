@@ -164,3 +164,10 @@ async def test_get_event_not_found(client: AsyncClient, auth_headers):
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Event not found"}
+
+@pytest.mark.anyio
+async def test_get_timeline_invalid_format(client: AsyncClient, auth_headers):
+    headers = auth_headers("tenant-A")
+    response = await client.get("/v1/timeline?entity=invalidformat", headers=headers)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Entity must be in format kind:id"

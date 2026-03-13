@@ -16,7 +16,7 @@ def wait_for_keycloak(kcadm, max_retries=30):
             kcadm.get_realms()
             print("Connected to Keycloak.")
             return True
-        except Exception:
+        except KeycloakConnectionError:
             print(f"Waiting for Keycloak... ({i+1}/{max_retries})")
             time.sleep(2)
     return False
@@ -31,7 +31,7 @@ def init_keycloak():
             realm_name="master",
             verify=True
         )
-    except Exception as e:
+    except KeycloakConnectionError as e:
         print(f"Failed to initialize Keycloak client: {e}")
         return
 
