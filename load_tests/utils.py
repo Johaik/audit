@@ -40,7 +40,7 @@ class TokenManager:
             
             self._tokens[client_id] = (access_token, now + expires_in)
             return access_token
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             print(f"Failed to get token for {client_id}: {e}")
             raise
 
