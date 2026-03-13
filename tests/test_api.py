@@ -153,3 +153,9 @@ async def test_query_events_filter(client: AsyncClient, auth_headers):
     data = response.json()
     assert len(data["events"]) == 2
 
+@pytest.mark.anyio
+async def test_get_timeline_invalid_format(client: AsyncClient, auth_headers):
+    headers = auth_headers("tenant-A")
+    response = await client.get("/v1/timeline?entity=invalidformat", headers=headers)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Entity must be in format kind:id"
