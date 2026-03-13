@@ -13,6 +13,7 @@ import logging
 from app.models import Event, EventEntity
 from app.schemas.common import EventCreate, EventRead, TimelineResponse
 from app.api.deps import get_db_with_context, get_current_tenant_id
+from app.api.utils import parse_cursor
 
 router = APIRouter()
 
@@ -154,18 +155,9 @@ async def get_timeline(
         .limit(limit)
     )
     
-    if cursor:
-        try:
-            cursor_cleaned = cursor.replace(" ", "+")
-            if cursor_cleaned.endswith("Z"):
-                 cursor_cleaned = cursor_cleaned.replace("Z", "+00:00")
-            
-            cursor_dt = datetime.fromisoformat(cursor_cleaned)
-            query = query.where(EventEntity.occurred_at < cursor_dt)
-        except ValueError as e:
-            # Log error for debugging if needed
-            logging.getLogger(__name__).warning(f"Cursor parse error: {e}, cursor: {cursor}")
-            raise HTTPException(status_code=400, detail="Invalid cursor format")
+    cursor_dt = parse_cursor(cursor)
+    if cursor_dt:
+        query = query.where(EventEntity.occurred_at < cursor_dt)
 
     result = await db.execute(query)
     events = result.scalars().all()
@@ -210,12 +202,9 @@ async def list_events(
     if actor_id:
         query = query.where(Event.actor_id == actor_id)
 
-    if cursor:
-        try:
-            cursor_dt = datetime.fromisoformat(cursor)
-            query = query.where(Event.occurred_at < cursor_dt)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid cursor format")
+    cursor_dt = parse_cursor(cursor)
+    if cursor_dt:
+        query = query.where(Event.occurred_at < cursor_dt)
 
     result = await db.execute(query)
     events = result.scalars().all()
