@@ -1,6 +1,8 @@
 import pytest
 from httpx import AsyncClient
 
+import uuid
+
 @pytest.mark.anyio
 async def test_health_check(client: AsyncClient):
     response = await client.get("/health")
@@ -94,6 +96,13 @@ async def test_idempotency_conflict(client: AsyncClient, auth_headers):
     assert response.status_code == 409
 
 @pytest.mark.anyio
+async def test_get_timeline_invalid_entity_format(client: AsyncClient, auth_headers):
+    headers = auth_headers("tenant-A")
+    response = await client.get("/v1/timeline?entity=invalid_format", headers=headers)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Entity must be in format kind:id"
+
+@pytest.mark.anyio
 async def test_get_timeline(client: AsyncClient, auth_headers):
     headers = auth_headers("tenant-A")
     
@@ -116,6 +125,20 @@ async def test_get_timeline(client: AsyncClient, auth_headers):
     data = response.json()
     assert len(data["events"]) == 1
     assert data["events"][0]["type"] == "doc.signed"
+
+@pytest.mark.anyio
+async def test_list_events_invalid_cursor(client: AsyncClient, auth_headers):
+    headers = auth_headers("tenant-A")
+    response = await client.get("/v1/events?cursor=invalid", headers=headers)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid cursor format"
+
+@pytest.mark.anyio
+async def test_get_timeline_invalid_cursor(client: AsyncClient, auth_headers):
+    headers = auth_headers("tenant-A")
+    response = await client.get("/v1/timeline?entity=document:doc-55&cursor=invalid", headers=headers)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid cursor format"
 
 @pytest.mark.anyio
 async def test_query_events_filter(client: AsyncClient, auth_headers):
@@ -153,3 +176,19 @@ async def test_query_events_filter(client: AsyncClient, auth_headers):
     data = response.json()
     assert len(data["events"]) == 2
 
+@pytest.mark.anyio
+async def test_get_event_not_found(client: AsyncClient, auth_headers):
+    headers = auth_headers("tenant-A")
+    random_id = uuid.uuid4()
+
+    response = await client.get(f"/v1/events/{random_id}", headers=headers)
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Event not found"}
+
+@pytest.mark.anyio
+async def test_get_timeline_invalid_format(client: AsyncClient, auth_headers):
+    headers = auth_headers("tenant-A")
+    response = await client.get("/v1/timeline?entity=invalidformat", headers=headers)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Entity must be in format kind:id"

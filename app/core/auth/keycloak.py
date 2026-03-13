@@ -1,5 +1,6 @@
 from typing import Dict, Any
 from keycloak import KeycloakAdmin, KeycloakOpenID
+from keycloak.exceptions import KeycloakError
 from app.config import settings
 from app.core.auth.idp import IdPProvider
 import jwt
@@ -99,7 +100,10 @@ class KeycloakProvider(IdPProvider):
         """
         Validates JWT signature against Keycloak public key.
         """
-        public_key = self.get_public_key()
+        try:
+            public_key = self.get_public_key()
+        except KeycloakError as e:
+            raise ValueError(f"Could not fetch public key: {str(e)}")
 
         options = {
             "verify_signature": True,
@@ -107,12 +111,14 @@ class KeycloakProvider(IdPProvider):
             "exp": True
         }
 
-        decoded = jwt.decode(
-            token,
-            public_key,
-            algorithms=["RS256"],
-            options=options,
-            audience=settings.KEYCLOAK_AUDIENCE,
-        )
-
-        return decoded
+        try:
+            decoded = jwt.decode(
+                token,
+                public_key,
+                algorithms=["RS256"],
+                options=options,
+                audience=settings.KEYCLOAK_AUDIENCE,
+            )
+            return decoded
+        except jwt.PyJWTError as e:
+            raise ValueError(f"Invalid token: {str(e)}")
