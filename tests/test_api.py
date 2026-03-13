@@ -1,6 +1,8 @@
 import pytest
 from httpx import AsyncClient
 
+import uuid
+
 @pytest.mark.anyio
 async def test_health_check(client: AsyncClient):
     response = await client.get("/health")
@@ -152,6 +154,16 @@ async def test_query_events_filter(client: AsyncClient, auth_headers):
     response = await client.get("/v1/events?actor_id=u-200", headers=headers)
     data = response.json()
     assert len(data["events"]) == 2
+
+@pytest.mark.anyio
+async def test_get_event_not_found(client: AsyncClient, auth_headers):
+    headers = auth_headers("tenant-A")
+    random_id = uuid.uuid4()
+
+    response = await client.get(f"/v1/events/{random_id}", headers=headers)
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Event not found"}
 
 @pytest.mark.anyio
 async def test_get_timeline_invalid_format(client: AsyncClient, auth_headers):
