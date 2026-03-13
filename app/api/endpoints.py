@@ -99,16 +99,17 @@ async def create_event(
         )
 
     # Create event entities
-    db.add_all([
-        EventEntity(
-            tenant_id=tenant_id,
-            event_id=new_event.event_id,
-            entity_kind=entity.kind,
-            entity_id=entity.id,
-            occurred_at=event_in.occurred_at # Denormalized
-        )
-        for entity in event_in.entities
-    ])
+    if event_in.entities:
+        db.add_all([
+            EventEntity(
+                tenant_id=tenant_id,
+                event_id=new_event.event_id,
+                entity_kind=entity.kind,
+                entity_id=entity.id,
+                occurred_at=event_in.occurred_at # Denormalized
+            )
+            for entity in event_in.entities
+        ])
 
     await db.commit()
     
