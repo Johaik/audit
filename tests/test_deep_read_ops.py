@@ -154,3 +154,28 @@ async def test_events_list_filtering(client: AsyncClient, auth_headers):
     assert len(data["events"]) == 1
     assert data["events"][0]["idempotency_key"] == "t1"
 
+@pytest.mark.anyio
+async def test_timeline_invalid_cursor(client: AsyncClient, auth_headers):
+    """
+    Test that an invalid cursor parameter returns a 400 Bad Request.
+    """
+    headers = auth_headers("tenant-timeline-err")
+
+    # Send a request to /timeline with an invalid cursor
+    resp = await client.get("/v1/timeline?entity=order:ord-1&cursor=invalid-cursor-format", headers=headers)
+
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == "Invalid cursor format"
+
+@pytest.mark.anyio
+async def test_events_invalid_cursor(client: AsyncClient, auth_headers):
+    """
+    Test that an invalid cursor parameter to /events returns a 400 Bad Request.
+    """
+    headers = auth_headers("tenant-events-err")
+
+    # Send a request to /events with an invalid cursor
+    resp = await client.get("/v1/events?cursor=invalid-cursor-format", headers=headers)
+
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == "Invalid cursor format"
