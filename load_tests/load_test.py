@@ -1,5 +1,6 @@
 import asyncio
 import httpx
+import requests
 import time
 import uuid
 import random
@@ -38,7 +39,7 @@ async def send_event(client, tenant_config):
         # In a real high-perf async app, we should use an async auth client.
         # For this test script, it's acceptable if cached, but ideally we'd offload to thread.
         token = get_token(tenant_config["client_id"], tenant_config["client_secret"])
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
         return "AuthError", 0, str(e)
 
     event_id = str(uuid.uuid4())
