@@ -39,7 +39,7 @@ async def verify_jwt(
         # In a real app, we should cache the public key
         payload = idp.validate_token(token)
         return payload
-    except Exception as e:
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Invalid authentication credentials: {str(e)}",
