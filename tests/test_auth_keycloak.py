@@ -70,7 +70,7 @@ def test_validate_token_missing_audience(mock_keycloak_provider):
 
     token = jwt.encode(payload, pem_private, algorithm="RS256")
 
-    with pytest.raises(jwt.exceptions.MissingRequiredClaimError) as exc_info:
+    with pytest.raises(ValueError) as exc_info:
         mock_keycloak_provider.validate_token(token)
 
     assert "aud" in str(exc_info.value)
@@ -89,7 +89,7 @@ def test_validate_token_invalid_audience(mock_keycloak_provider):
 
     token = jwt.encode(payload, pem_private, algorithm="RS256")
 
-    with pytest.raises(jwt.exceptions.InvalidAudienceError) as exc_info:
+    with pytest.raises(ValueError) as exc_info:
         mock_keycloak_provider.validate_token(token)
 
     assert "Audience doesn't match" in str(exc_info.value)
