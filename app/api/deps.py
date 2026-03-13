@@ -40,9 +40,10 @@ async def verify_jwt(
         payload = idp.validate_token(token)
         return payload
     except Exception as e:
+        logger.exception("JWT validation failed")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid authentication credentials: {str(e)}",
+            detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
