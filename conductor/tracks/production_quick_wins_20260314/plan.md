@@ -14,10 +14,10 @@
 - [x] **Task: Conductor - User Manual Verification 'Phase 1: Performance Optimization & Reliability Tuning' (Protocol in workflow.md)** [checkpoint: 421b808]
 
 ## Phase 2: Enhanced System Observability & Health Checks
-- [ ] **Task: Write Tests for Health Checks and Logging**
-    - [ ] Create `tests/test_observability_enhanced.py`.
-    - [ ] Define test cases to check the `/health` endpoint for detailed JSON response and component status.
-    - [ ] Define test cases to verify that logs are output in a structured JSON format.
+- [x] **Task: Write Tests for Health Checks and Logging** [0c1508f]
+    - [x] Create `tests/test_observability_enhanced.py`.
+    - [x] Define test cases to check the `/health` endpoint for detailed JSON response and component status.
+    - [x] Define test cases to verify that logs are output in a structured JSON format.
 - [ ] **Task: Implement Detailed Health Checks**
     - [ ] Enhance the `/health` endpoint in `app/main.py` or create a new `app/api/routers/health.py`.
     - [ ] Implement concurrent checks for PostgreSQL (latency) and Keycloak (heartbeat).
