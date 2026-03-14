@@ -1,10 +1,10 @@
 # Implementation Plan: Production Readiness - Immediate Quick Wins
 
 ## Phase 1: Performance Optimization & Reliability Tuning
-- [ ] **Task: Write Tests for Idempotency Refactor**
-    - [ ] Create `tests/test_performance_refactor.py`.
-    - [ ] Implement test cases to verify current idempotency behavior for all models (`events`, etc.).
-    - [ ] Ensure tests fail if existing savepoint logic is missing or broken.
+- [x] **Task: Write Tests for Idempotency Refactor** [cc58fcd]
+    - [x] Create `tests/test_performance_refactor.py`.
+    - [x] Implement test cases to verify current idempotency behavior for all models (`events`, etc.).
+    - [x] Ensure tests fail if existing savepoint logic is missing or broken.
 - [ ] **Task: Refactor Idempotency Logic**
     - [ ] Replace nested savepoints in `app/api/utils.py` and model-specific logic with `INSERT ... ON CONFLICT`.
     - [ ] Run the new performance tests and confirm they pass.
