@@ -47,15 +47,18 @@ async def test_structured_logging_output(client: AsyncClient, capsys):
     assert any("JSONRenderer" in str(p) for p in processors), f"JSONRenderer not found in {processors}"
 
 @pytest.mark.anyio
-async def test_tracing_context_propagation(client: AsyncClient):
+async def test_tracing_context_propagation(client: AsyncClient, auth_headers):
     """
     Test that trace ID is present in response headers and propagated.
     This test expects OpenTelemetry instrumentation to be active.
     """
-    response = await client.get("/health")
+    # Use a traced endpoint (not health)
+    response = await client.get("/v1/events", headers=auth_headers("tenant-trace"))
     assert response.status_code == 200
     
     # Check for trace ID in headers. 
-    # OpenTelemetry FastAPI instrumentation often adds 'traceparent' or custom headers.
-    # We might configure a middleware to inject a simpler 'X-Trace-Id'.
     assert "X-Trace-Id" in response.headers or "traceparent" in response.headers
+    if "X-Trace-Id" in response.headers:
+        trace_id = response.headers["X-Trace-Id"]
+        assert len(trace_id) == 32
+        assert trace_id != "00000000000000000000000000000000"
