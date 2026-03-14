@@ -5,9 +5,9 @@
     - [x] Create `tests/test_performance_refactor.py`.
     - [x] Implement test cases to verify current idempotency behavior for all models (`events`, etc.).
     - [x] Ensure tests fail if existing savepoint logic is missing or broken.
-- [ ] **Task: Refactor Idempotency Logic**
-    - [ ] Replace nested savepoints in `app/api/utils.py` and model-specific logic with `INSERT ... ON CONFLICT`.
-    - [ ] Run the new performance tests and confirm they pass.
+- [x] **Task: Refactor Idempotency Logic** [b3cbeaa]
+    - [x] Replace nested savepoints in `app/api/utils.py` and model-specific logic with `INSERT ... ON CONFLICT`.
+    - [x] Run the new performance tests and confirm they pass.
 - [ ] **Task: Tune Database Connection Pooling**
     - [ ] Update `app/database.py` to configure `asyncpg` pool size and timeouts with optimized defaults.
     - [ ] Verify database connection stability under load.
