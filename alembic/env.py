@@ -26,7 +26,9 @@ target_metadata = Base.metadata
 
 from app.config import settings
 # Use ADMIN_DATABASE_URL for migrations to ensure we have permissions
-config.set_main_option("sqlalchemy.url", settings.ADMIN_DATABASE_URL)
+# Escape '%' for configparser interpolation
+db_url = settings.ADMIN_DATABASE_URL.replace("%", "%%")
+config.set_main_option("sqlalchemy.url", db_url)
 
 import asyncio
 
