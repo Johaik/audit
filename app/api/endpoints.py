@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, text
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
 from typing import Optional, List
@@ -34,40 +35,33 @@ async def create_event(
     # Calculate hash if not provided
     event_hash = event_in.hash or calculate_hash(event_in)
 
-    # Optimistic insertion (Create new event first, handle conflict later)
-    # Use nested transaction to prevent full rollback on IntegrityError, preserving RLS context
-    try:
-        async with db.begin_nested():
-            new_event = Event(
-                tenant_id=tenant_id,
-                occurred_at=event_in.occurred_at,
-                type=event_in.type,
-                actor_kind=event_in.actor.kind,
-                actor_id=event_in.actor.id,
-                trace=event_in.trace.model_dump() if event_in.trace else None,
-                payload=event_in.payload,
-                idempotency_key=event_in.idempotency_key,
-                hash=event_hash
-            )
-            db.add(new_event)
-            await db.flush()
-    except IntegrityError:
-        # Transaction rolled back to savepoint, but session/connection is still valid
-        # RLS context (SET LOCAL) should be preserved as long as the outer transaction is alive.
-        
-        # Check if idempotency key exists
+    # Use ON CONFLICT DO NOTHING for performance and to avoid nested transaction overhead
+    event_id = uuid.uuid4()
+    stmt = insert(Event).values(
+        event_id=event_id,
+        tenant_id=tenant_id,
+        occurred_at=event_in.occurred_at,
+        type=event_in.type,
+        actor_kind=event_in.actor.kind,
+        actor_id=event_in.actor.id,
+        trace=event_in.trace.model_dump() if event_in.trace else None,
+        payload=event_in.payload,
+        idempotency_key=event_in.idempotency_key,
+        hash=event_hash
+    ).on_conflict_do_nothing(
+        index_elements=['tenant_id', 'idempotency_key']
+    )
+    
+    result = await db.execute(stmt)
+    
+    if result.rowcount == 0:
+        # Conflict occurred, fetch existing event
         query = select(Event).options(selectinload(Event.entities)).where(
             # Event.tenant_id == tenant_id, # RLS enforces this
             Event.idempotency_key == event_in.idempotency_key
         )
         result = await db.execute(query)
         existing_event = result.scalar_one_or_none()
-        
-        # If we can't see the event despite the constraint violation, it means
-        # RLS hid it (which shouldn't happen for the same tenant) OR
-        # the transaction state is messed up from the exception.
-        # However, because we are in a nested transaction (savepoint), the outer
-        # transaction is still valid and we *should* be able to query.
         
         if existing_event:
              # Check hash for duplicate detection
@@ -80,22 +74,9 @@ async def create_event(
              response.status_code = status.HTTP_200_OK
              return existing_event
         
-        # Fallback: If we got IntegrityError but query returns None,
-        # it might be a race condition where another transaction committed just now
-        # but is not visible to our snapshot?
-        # OR RLS issue.
-        # Let's try to fetch it one more time without RLS filter if we were superuser,
-        # but we can't easily do that here.
-        # Given we are the same tenant, we should see it.
-        # Maybe the 'set_config' was lost? (Unlikely in nested rollback)
-        
-        # IMPORTANT: When using AsyncPG, sometimes cursor/transaction state needs care.
-        # If the above query returned None, it is genuinely weird for a unique constraint violation
-        # on (tenant_id, idempotency_key).
-        
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, 
-            detail="Idempotency conflict detected (event exists)"
+            detail="Idempotency conflict detected"
         )
 
     # Create event entities
@@ -103,7 +84,7 @@ async def create_event(
         db.add_all([
             EventEntity(
                 tenant_id=tenant_id,
-                event_id=new_event.event_id,
+                event_id=event_id,
                 entity_kind=entity.kind,
                 entity_id=entity.id,
                 occurred_at=event_in.occurred_at # Denormalized
@@ -123,7 +104,7 @@ async def create_event(
     )
 
     # Re-fetch with eager load
-    query = select(Event).options(selectinload(Event.entities)).where(Event.event_id == new_event.event_id)
+    query = select(Event).options(selectinload(Event.entities)).where(Event.event_id == event_id)
     result = await db.execute(query)
     final_event = result.scalar_one()
     
