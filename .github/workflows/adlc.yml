@@ -16,6 +16,43 @@ jobs:
   adlc:
     runs-on: ubuntu-latest
     
+    env:
+      POSTGRES_USER: audit_admin
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: audit_db
+      APP_DB_USER: audit_app
+      APP_DB_PASSWORD: ${{ secrets.APP_DB_PASSWORD }}
+      DATABASE_URL: postgresql+asyncpg://audit_app:${{ secrets.APP_DB_PASSWORD }}@localhost:5433/audit_db
+      ADMIN_DATABASE_URL: postgresql+asyncpg://audit_admin:${{ secrets.POSTGRES_PASSWORD }}@localhost:5433/audit_db
+      KEYCLOAK_URL: http://localhost:8080
+      KEYCLOAK_REALM: audit-realm
+      KEYCLOAK_ADMIN_USER: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
+      KEYCLOAK_AUDIENCE: audit-api
+      KEYCLOAK_DB_NAME: keycloak
+      KEYCLOAK_DB_USER: keycloak
+      KEYCLOAK_DB_PASSWORD: ${{ secrets.KEYCLOAK_DB_PASSWORD }}
+      ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
+      JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Start services
+        run: docker compose up -d
+
+      - name: Wait for Postgres
+        run: |
+          until docker exec audit-db-1 pg_isready -U audit_admin -d audit_db; do
+            echo "Waiting for Postgres..."
+            sleep 2
+          done
+
+      - name: Wait for Keycloak
+        run: |
+          until curl -s http://localhost:8080/health/live | grep -q "UP" || curl -s http://localhost:8080/health | grep -q "UP"; do
+            echo "Waiting for Keycloak..."
+            sleep 5
+          done
+        # Note: Keycloak 24+ uses /health/live if enabled, otherwise check standard endpoint
