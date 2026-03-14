@@ -1,6 +1,6 @@
 # Implementation Plan: Enhance Ingestion Validation with Schema Enforcement
 
-## Phase 1: Preparation & Schema Refinement
+## Phase 1: Preparation & Schema Refinement [checkpoint: 1923890]
 - [x] **Task: Write Tests for Schema Validation** [3958d75]
     - [x] Create `tests/test_ingestion_validation.py`.
     - [x] Define test cases for invalid IDs (e.g., containing special characters).
@@ -11,7 +11,7 @@
     - [x] Add regex for all ID fields.
     - [x] Ensure `occurred_at` uses Pydantic's `datetime` type for automatic validation.
     - [x] Run the new tests and verify they pass.
-- [~] **Task: Conductor - User Manual Verification 'Phase 1: Preparation & Schema Refinement' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Phase 1: Preparation & Schema Refinement' (Protocol in workflow.md)** [checkpoint: 1923890]
 
 ## Phase 2: API Integration & Final Verification
 - [ ] **Task: Update Ingestion Route**
