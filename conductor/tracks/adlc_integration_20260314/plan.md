@@ -31,7 +31,7 @@
   - [x] Add full regression test suite execution to the nightly run.
 - [~] **Task: Implement Weekly Dependency & Package Checks**
   - [ ] Define a weekly scheduled job for checking package updates.
-  - [ ] Integrate vulnerability scanning for dependencies.
+  - [x] Integrate vulnerability scanning for dependencies.
 - [ ] **Task: Final Pipeline Validation & Branch Protection**
   - [ ] Execute a full end-to-end run of the pipeline.
   - [ ] (Manual Step) Document the requirement for branch protection rules based on this pipeline.
