@@ -30,11 +30,11 @@ This track implements the **Agentic Development Life Cycle (ADLC)** by integrati
 
 ## 4. Acceptance Criteria
 
-* [ ] GitHub Actions workflow YAML file is created and passes syntax validation.
-* [ ] Pipeline successfully executes unit/integration tests against Docker-managed services.
-* [ ] Jules-powered security analysis and documentation sync steps are functional.
-* [ ] Scheduled (Nightly/Weekly) runs are correctly configured in the workflow metadata.
-* [ ] Merges to `master` are restricted if the ADLC pipeline fails.
+* [x] GitHub Actions workflow YAML file is created and passes syntax validation.
+* [x] Pipeline successfully executes unit/integration tests against Docker-managed services.
+* [x] Jules-powered security analysis and documentation sync steps are functional.
+* [x] Scheduled (Nightly/Weekly) runs are correctly configured in the workflow metadata.
+* [x] Merges to `master` are restricted if the ADLC pipeline fails.
 
 ## 5. Out of Scope
 
