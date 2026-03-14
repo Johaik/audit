@@ -51,6 +51,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install Jules CLI
+        run: npm install -g @google/jules
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -100,6 +103,10 @@ jobs:
       - name: Run tests
         run: |
           pytest --cov=app --cov-report=xml --cov-fail-under=80
+
+      - name: Dependency Security Scan
+        run: |
+          pip-audit
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

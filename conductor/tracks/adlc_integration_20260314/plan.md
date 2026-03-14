@@ -22,14 +22,14 @@
   - [x] Add Jules steps for automated unit test generation and updates.
   - [x] Implement Jules-powered documentation sync for `product.md` and `spec.md`.
   - [x] Configure Jules auto-remediation for detected CI failures.
-- [ ] **Task: Conductor - User Manual Verification 'Phase 2: Testing & Jules Integration' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Phase 2: Testing & Jules Integration' (Protocol in workflow.md)** [checkpoint: aad8396]
 
 ## Phase 3: Security & Scheduled Maintenance
 
-- [ ] **Task: Configure Nightly Security & Regression Jobs**
-  - [ ] Define a `schedule` job for nightly deep security scans using Jules.
-  - [ ] Add full regression test suite execution to the nightly run.
-- [ ] **Task: Implement Weekly Dependency & Package Checks**
+- [x] **Task: Configure Nightly Security & Regression Jobs** [aad8396]
+  - [x] Define a `schedule` job for nightly deep security scans using Jules.
+  - [x] Add full regression test suite execution to the nightly run.
+- [~] **Task: Implement Weekly Dependency & Package Checks**
   - [ ] Define a weekly scheduled job for checking package updates.
   - [ ] Integrate vulnerability scanning for dependencies.
 - [ ] **Task: Final Pipeline Validation & Branch Protection**
