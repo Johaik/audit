@@ -2,9 +2,9 @@ name: Agentic Development Life Cycle (ADLC)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
   workflow_dispatch:
   schedule:
     # Nightly run at 00:00 UTC
