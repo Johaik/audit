@@ -36,4 +36,4 @@
     - [x] Install and configure OpenTelemetry SDK and instrumentation for FastAPI and SQLAlchemy.
     - [x] Set up a basic OTLP exporter for trace data.
     - [x] Verify trace generation and context propagation across service layers.
-- [ ] **Task: Conductor - User Manual Verification 'Phase 3: Distributed Tracing & Initial Instrumentation' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Phase 3: Distributed Tracing & Initial Instrumentation' (Protocol in workflow.md)** [checkpoint: 98aad79]
