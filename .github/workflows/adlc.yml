@@ -107,18 +107,19 @@ jobs:
       - name: Install Jules CLI
         run: npm install -g @google/jules
 
-      - name: Jules: Security Analysis
+      - name: "Jules: Security Analysis"
         if: github.event_name == 'pull_request' || github.event_name == 'schedule'
         run: jules new "Analyze the codebase for security vulnerabilities and compliance with audit standards."
 
-      - name: Jules: Auto-Doc Sync
+      - name: "Jules: Auto-Doc Sync"
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: jules new "Synchronize product.md and spec files with the latest code changes."
 
-      - name: Jules: Test Maintenance
+      - name: "Jules: Test Maintenance"
         if: github.event_name == 'pull_request'
         run: jules new "Update unit and integration tests to cover the latest changes and maintain >80% coverage."
 
-      - name: Jules: Auto-Remediation
+      - name: "Jules: Auto-Remediation"
         if: failure() && (github.event_name == 'push' || github.event_name == 'pull_request')
         run: jules new "The CI pipeline failed. Please analyze the logs and provide a fix for the failure."
+
