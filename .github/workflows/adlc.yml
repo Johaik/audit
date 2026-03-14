@@ -1,0 +1,21 @@
+name: Audit Development Life Cycle (ADLC)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    # Nightly run at 00:00 UTC
+    - cron: '0 0 * * *'
+    # Weekly run at 00:00 UTC on Sunday
+    - cron: '0 0 * * 0'
+
+jobs:
+  adlc:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
