@@ -4,5 +4,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [~] **Track: implement of ADLC using google jules and github actions**
+- [x] **Track: implement of ADLC using google jules and github actions**
   *Link: [./tracks/adlc_integration_20260314/](./tracks/adlc_integration_20260314/)*

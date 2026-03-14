@@ -43,4 +43,4 @@
     - [x] Create `adlc-doc-sync.yml` for weekly documentation sync.
     - [x] Configure `.github/dependabot.yml` for weekly dependency audits.
     - [x] Remove legacy `adlc.yml` and `adlc-dependency-check.yml`.
-- [~] **Task: Conductor - User Manual Verification 'Phase 4: Modular Workflows' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Phase 4: Modular Workflows' (Protocol in workflow.md)** [checkpoint: 2736b74]
