@@ -32,8 +32,8 @@
 - [x] **Task: Write Tests for OpenTelemetry Scaffolding** [a309ba3]
     - [x] Define test cases in `tests/test_observability_enhanced.py` to check for trace context propagation.
     - [x] Ensure that a trace ID is present in the outgoing response headers.
-- [ ] **Task: Implement OpenTelemetry Instrumentation**
-    - [ ] Install and configure OpenTelemetry SDK and instrumentation for FastAPI and SQLAlchemy.
-    - [ ] Set up a basic OTLP exporter for trace data.
-    - [ ] Verify trace generation and context propagation across service layers.
+- [x] **Task: Implement OpenTelemetry Instrumentation** [98aad79]
+    - [x] Install and configure OpenTelemetry SDK and instrumentation for FastAPI and SQLAlchemy.
+    - [x] Set up a basic OTLP exporter for trace data.
+    - [x] Verify trace generation and context propagation across service layers.
 - [ ] **Task: Conductor - User Manual Verification 'Phase 3: Distributed Tracing & Initial Instrumentation' (Protocol in workflow.md)**
