@@ -22,7 +22,7 @@
   - [x] Add Jules steps for automated unit test generation and updates.
   - [x] Implement Jules-powered documentation sync for `product.md` and `spec.md`.
   - [x] Configure Jules auto-remediation for detected CI failures.
-- [ ] **Task: Conductor - User Manual Verification 'Phase 2: Testing & Jules Integration' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Phase 2: Testing & Jules Integration' (Protocol in workflow.md)** [checkpoint: 4029dcc]
 
 ## Phase 3: Security & Scheduled Maintenance
 
