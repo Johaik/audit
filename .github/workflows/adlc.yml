@@ -15,6 +15,7 @@ on:
 jobs:
   adlc:
     runs-on: ubuntu-latest
+    environment: jules
     
     env:
       POSTGRES_USER: audit_admin
@@ -63,7 +64,7 @@ jobs:
       - name: Wait for Keycloak
         run: |
           for i in {1..30}; do
-            if curl -s http://localhost:8080/health/live | grep -q "UP" || curl -s http://localhost:8080/health | grep -q "UP"; then
+            if curl -s http://localhost:8080/health/live | grep -q "UP" || curl -s http://localhost:8080/health | grep -q "UP"; do
               echo "Keycloak is ready!"
               exit 0
             fi
