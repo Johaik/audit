@@ -12,6 +12,10 @@ jobs:
     if: github.event.label.name == 'adlc-auto-remediation' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: jules
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     
     env:
       LINEAR_TOKEN: ${{ secrets.LINEAR_TOKEN }}
@@ -36,4 +40,5 @@ jobs:
                - CRITICAL: Ensure the PR body contains the string "Fixes #GH_ISSUE_NUMBER" where GH_ISSUE_NUMBER is the number of the issue being fixed. This ensures the issue is automatically closed when the PR is merged.
             6. Add a comment to the GitHub issue when the Linear task is created and when the PR is submitted.
           jules_api_key: ${{ secrets.JULES_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           starting_branch: master
