@@ -46,6 +46,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -105,28 +110,32 @@ jobs:
 
       - name: "Jules: Security Analysis"
         if: github.event_name == 'pull_request' || github.event_name == 'schedule'
-        uses: google-labs-code/jules-invoke@v1
+        uses: google-labs-code/jules-action@v1.0.0
         with:
           prompt: "Analyze the codebase for security vulnerabilities and compliance with audit standards."
           jules_api_key: ${{ secrets.JULES_API_KEY }}
+          starting_branch: ${{ github.ref_name }}
 
       - name: "Jules: Auto-Doc Sync"
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        uses: google-labs-code/jules-invoke@v1
+        uses: google-labs-code/jules-action@v1.0.0
         with:
           prompt: "Synchronize product.md and spec files with the latest code changes."
           jules_api_key: ${{ secrets.JULES_API_KEY }}
+          starting_branch: ${{ github.ref_name }}
 
       - name: "Jules: Test Maintenance"
         if: github.event_name == 'pull_request'
-        uses: google-labs-code/jules-invoke@v1
+        uses: google-labs-code/jules-action@v1.0.0
         with:
           prompt: "Update unit and integration tests to cover the latest changes and maintain >80% coverage."
           jules_api_key: ${{ secrets.JULES_API_KEY }}
+          starting_branch: ${{ github.ref_name }}
 
       - name: "Jules: Auto-Remediation"
         if: failure()
-        uses: google-labs-code/jules-invoke@v1
+        uses: google-labs-code/jules-action@v1.0.0
         with:
           prompt: "The CI pipeline failed. Please analyze the logs and provide a fix for the failure."
           jules_api_key: ${{ secrets.JULES_API_KEY }}
+          starting_branch: ${{ github.ref_name }}
