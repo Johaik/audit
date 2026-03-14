@@ -4,5 +4,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [ ] **Track: Enhance Ingestion Validation with Schema Enforcement**
+- [~] **Track: Enhance Ingestion Validation with Schema Enforcement**
   *Link: [./tracks/ingestion_validation_20260314/](./tracks/ingestion_validation_20260314/)*
