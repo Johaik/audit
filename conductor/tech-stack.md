@@ -21,3 +21,5 @@
 *   **Pytest-Asyncio:** Pytest plugin for testing asynchronous code.
 *   **HTTPX:** A next-generation HTTP client for Python, used for API testing.
 *   **Docker & Docker Compose:** Containerization for consistent local development and production environments.
+*   **structlog:** Structured JSON logging for production observability.
+*   **OpenTelemetry:** Distributed tracing and metrics for system-wide visibility.
