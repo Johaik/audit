@@ -3,6 +3,13 @@ name: ADLC - CI Pipeline
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - '**.md'
+      - 'conductor/**'
+      - 'docs/**'
+      - '.gitignore'
+      - 'codecov.yml'
+      - '.vscode/**'
   workflow_dispatch:
 
 jobs:
