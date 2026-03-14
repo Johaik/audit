@@ -26,7 +26,7 @@ The **Audit Service** provides a centralized, high-performance, and secure repos
 * **Strict Multi-tenancy:** Utilizes PostgreSQL Row Level Security (RLS) to ensure absolute data isolation between different organizational units or tenants.
 * **Entity-Centric Polymorphic Indexing:** Efficiently indexes events by the entities they involve (Actor, Resource, Target), allowing for rich, multidimensional queries and timeline views.
 * **Idempotent Ingestion:** Built-in `idempotency_key` support to handle duplicate event delivery gracefully and ensure exactly-once processing.
-* **Agentic CI/CD (ADLC):** Integrated with Google Jules and GitHub Actions for automated testing, documentation generation, and auto-remediation.
+* **Agentic CI/CD (ADLC):** Integrated with Google Jules and GitHub Actions for automated testing, documentation generation, auto-remediation, and dependency security scanning.
 
 ## 5. Constraints & Non-Functional Requirements
 
@@ -34,4 +34,4 @@ The **Audit Service** provides a centralized, high-performance, and secure repos
 * **Scalability:** Designed to handle millions of events per day with horizontal scaling of the API and optimized database indexing.
 * **Security & Isolation:** Leverages PostgreSQL RLS and Keycloak OIDC for robust authentication and authorization.
 * **Integration:** Provides a simple, well-documented API for easy onboarding and integration with existing microservices.
-* **Reliability & Automation:** Leverages an Agentic Development Life Cycle (ADLC) with Google Jules to maintain high code quality, automatic documentation sync, and continuous security checks.
+* **Reliability & Automation:** Leverages an Agentic Development Life Cycle (ADLC) with Google Jules to maintain high code quality, automatic documentation sync, continuous security checks, and dependency vulnerability scanning.
