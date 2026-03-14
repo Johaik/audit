@@ -8,9 +8,9 @@
 - [x] **Task: Refactor Idempotency Logic** [b3cbeaa]
     - [x] Replace nested savepoints in `app/api/utils.py` and model-specific logic with `INSERT ... ON CONFLICT`.
     - [x] Run the new performance tests and confirm they pass.
-- [ ] **Task: Tune Database Connection Pooling**
-    - [ ] Update `app/database.py` to configure `asyncpg` pool size and timeouts with optimized defaults.
-    - [ ] Verify database connection stability under load.
+- [x] **Task: Tune Database Connection Pooling** [9569ed1]
+    - [x] Update `app/database.py` to configure `asyncpg` pool size and timeouts with optimized defaults.
+    - [x] Verify database connection stability under load.
 - [ ] **Task: Conductor - User Manual Verification 'Phase 1: Performance Optimization & Reliability Tuning' (Protocol in workflow.md)**
 
 ## Phase 2: Enhanced System Observability & Health Checks
