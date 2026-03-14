@@ -29,10 +29,10 @@
 - [x] **Task: Configure Nightly Security & Regression Jobs** [aad8396]
   - [x] Define a `schedule` job for nightly deep security scans using Jules.
   - [x] Add full regression test suite execution to the nightly run.
-- [~] **Task: Implement Weekly Dependency & Package Checks**
-  - [ ] Define a weekly scheduled job for checking package updates.
-  - [ ] Integrate vulnerability scanning for dependencies.
-- [ ] **Task: Final Pipeline Validation & Branch Protection**
-  - [ ] Execute a full end-to-end run of the pipeline.
-  - [ ] (Manual Step) Document the requirement for branch protection rules based on this pipeline.
-- [ ] **Task: Conductor - User Manual Verification 'Phase 3: Security & Scheduled Maintenance' (Protocol in workflow.md)**
+- [x] **Task: Implement Weekly Dependency & Package Checks** [1e42c9f]
+  - [x] Define a weekly scheduled job for checking package updates.
+  - [x] Integrate vulnerability scanning for dependencies.
+- [x] **Task: Final Pipeline Validation & Branch Protection** [6e90d79]
+  - [x] Execute a full end-to-end run of the pipeline.
+  - [x] (Manual Step) Document the requirement for branch protection rules based on this pipeline.
+- [x] **Task: Conductor - User Manual Verification 'Phase 3: Security & Scheduled Maintenance' (Protocol in workflow.md)**

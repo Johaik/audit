@@ -18,7 +18,7 @@ This track implements the **Agentic Development Life Cycle (ADLC)** by integrati
     * **Manual triggers** for ad-hoc runs.
   * **Scheduled Tasks:**
     * **Nightly:** Full regression test suite execution and deep security checks.
-    * **Weekly:** Package update checks and dependency vulnerability scans.
+    * **Weekly:** Package update checks and dependency vulnerability scans (via pip-audit).
 * **CI Environment:**
   * The workflow will use **Docker Compose** to spin up isolated PostgreSQL (with RLS) and Keycloak instances for every run, ensuring a consistent and reproducible testing environment.
 * **Secrets Management:**
@@ -36,7 +36,7 @@ This track implements the **Agentic Development Life Cycle (ADLC)** by integrati
 * [ ] Pipeline successfully executes unit/integration tests against Docker-managed services.
 * [ ] Jules-powered security analysis and documentation sync steps are functional.
 * [ ] Scheduled (Nightly/Weekly) runs are correctly configured in the workflow metadata.
-* [ ] Merges to `master` are restricted if the ADLC pipeline fails.
+* [x] Merges to `master` are restricted if the ADLC pipeline fails.
 
 ## 5. Out of Scope
 
