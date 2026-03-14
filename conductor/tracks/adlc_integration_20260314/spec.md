@@ -1,7 +1,7 @@
 # Specification: ADLC Implementation with Google Jules & GitHub Actions
 
 ## 1. Overview
-This track implements the **Audit Development Life Cycle (ADLC)** by integrating **Google Jules** into a robust **GitHub Actions** CI/CD pipeline. The goal is to automate testing, security analysis, documentation synchronization, and bug remediation to ensure the Audit Service remains production-grade and highly reliable.
+This track implements the **Agentic Development Life Cycle (ADLC)** by integrating **Google Jules** into a robust **GitHub Actions** CI/CD pipeline. The goal is to automate testing, security analysis, documentation synchronization, and bug remediation to ensure the Audit Service remains production-grade and highly reliable.
 
 ## 2. Functional Requirements
 *   **Google Jules Integration:**
