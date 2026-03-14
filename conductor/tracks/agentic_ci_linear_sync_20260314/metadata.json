@@ -1,0 +1,8 @@
+{
+  "track_id": "agentic_ci_linear_sync_20260314",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-03-14T17:15:00Z",
+  "updated_at": "2026-03-14T17:15:00Z",
+  "description": "agentic ci improment and linear implmention: i want that each fail in the ci will create a github issue with detailed data about the issues (when there is no existing issue about it) and after this schaled task in jules will take care of the issues and update linaier as jules has mcp intgration there, so this way linear will show me the issues and there description while keep the agent autunomy works on the code"
+}
