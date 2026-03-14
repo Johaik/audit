@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import httpx
+import urllib.parse
 from datetime import datetime
 
 # Configuration from Environment Variables
@@ -56,10 +57,19 @@ def get_changed_files():
     Returns:
         A list of filename strings.
     """
+    if not GITHUB_SHA:
+        import subprocess
+        try:
+            res = subprocess.check_output(["git", "diff", "--name-only", "HEAD~1"], text=True)
+            return res.splitlines()
+        except Exception:
+            return []
+
     # We can use the commit API
     url = f"{API_BASE}/commits/{GITHUB_SHA}"
     response = httpx.get(url, headers=headers)
-    response.raise_for_status()
+    if response.status_code != 200:
+        return []
     files = [f["filename"] for f in response.json().get("files", [])]
     return files
 
@@ -72,10 +82,13 @@ def find_existing_issue(signature):
     Returns:
         The first matching issue object if found, else None.
     """
-    query = f"repo:{GITHUB_REPOSITORY} is:issue is:open \"{signature}\""
+    if not GITHUB_REPOSITORY:
+        return None
+    query = urllib.parse.quote(f"repo:{GITHUB_REPOSITORY} is:issue is:open \"{signature}\"")
     url = f"https://api.github.com/search/issues?q={query}"
     response = httpx.get(url, headers=headers)
-    response.raise_for_status()
+    if response.status_code != 200:
+        return None
     items = response.json().get("items", [])
     return items[0] if items else None
 
@@ -119,7 +132,7 @@ def main():
     
     if not failures:
         # Fallback if we can't parse specific test failures
-        signature = f"CI Failure in {GITHUB_SHA[:7]}"
+        signature = f"CI Failure in {GITHUB_SHA[:7] if GITHUB_SHA else 'local'}"
     else:
         signature = f"Failure in {failures[0]}"
     
@@ -129,14 +142,14 @@ def main():
         return
 
     changed_files = get_changed_files()
-    run_url = f"{GITHUB_SERVER_URL}/{GITHUB_REPOSITORY}/actions/runs/{GITHUB_RUN_ID}"
+    run_url = f"{GITHUB_SERVER_URL}/{GITHUB_REPOSITORY}/actions/runs/{GITHUB_RUN_ID}" if GITHUB_RUN_ID else "Local Run"
     
     issue_title = f"[ADLC] {signature}"
     issue_body = f"""## CI Failure Detected
 
 **Failed Test/Check:** `{signature}`
 **Run URL:** {run_url}
-**Triggering Commit:** {GITHUB_SHA}
+**Triggering Commit:** {GITHUB_SHA or 'local'}
 
 ### Changed Files in this Commit:
 {chr(10).join(f"- {f}" for f in changed_files)}

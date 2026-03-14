@@ -10,6 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 import os
 
 def setup_tracing(app: FastAPI, engine: AsyncEngine):
+    # DELIBERATE BUG TO TRIGGER CI FAILURE
+    1 / 0
     service_name = os.getenv("OTEL_SERVICE_NAME", "audit-api")
     resource = Resource.create({"service.name": service_name})
     
