@@ -1,10 +1,10 @@
 # Implementation Plan: ADLC with Google Jules & GitHub Actions
 
 ## Phase 1: CI Pipeline Scaffolding & Environment Setup
-- [ ] **Task: Define GitHub Actions Workflow Structure**
-    - [ ] Create `.github/workflows/adlc.yml`.
-    - [ ] Define basic metadata (name, triggers for PR, push, manual).
-    - [ ] Set up the runner environment (ubuntu-latest).
+- [x] **Task: Define GitHub Actions Workflow Structure** [63524c5]
+    - [x] Create `.github/workflows/adlc.yml`.
+    - [x] Define basic metadata (name, triggers for PR, push, manual).
+    - [x] Set up the runner environment (ubuntu-latest).
 - [ ] **Task: Configure CI Service Environment**
     - [ ] Integrate `docker-compose.yml` into the workflow to spin up Postgres and Keycloak.
     - [ ] Implement health checks in the workflow to ensure services are ready before testing.
