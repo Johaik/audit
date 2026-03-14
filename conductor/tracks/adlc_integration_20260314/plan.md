@@ -9,10 +9,10 @@
     - [x] Integrate `docker-compose.yml` into the workflow to spin up Postgres and Keycloak.
     - [x] Implement health checks in the workflow to ensure services are ready before testing.
     - [x] Map GitHub Secrets to environment variables within the runner.
-- [ ] **Task: Conductor - User Manual Verification 'Phase 1: Pipeline Scaffolding' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Phase 1: Pipeline Scaffolding' (Protocol in workflow.md)** [checkpoint: c432de7]
 
 ## Phase 2: Core Testing & Jules Integration
-- [ ] **Task: Implement Automated Test Execution**
+- [~] **Task: Implement Automated Test Execution**
     - [ ] Add steps to install dependencies from `requirements.txt`.
     - [ ] Configure `pytest` execution within the CI environment.
     - [ ] Add code coverage reporting and enforcement (>80%).
