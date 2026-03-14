@@ -64,7 +64,7 @@ jobs:
       - name: Wait for Keycloak
         run: |
           for i in {1..30}; do
-            if curl -s http://localhost:8080/health/live | grep -q "UP" || curl -s http://localhost:8080/health | grep -q "UP"; do
+            if curl -s http://localhost:8080/health/live | grep -q "UP" || curl -s http://localhost:8080/health | grep -q "UP"; then
               echo "Keycloak is ready!"
               exit 0
             fi
