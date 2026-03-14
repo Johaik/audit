@@ -120,16 +120,13 @@ async def create_event(
 
 @router.get("/timeline", response_model=TimelineResponse)
 async def get_timeline(
-    entity: str = Query(..., description="Format: kind:id"),
+    entity: str = Query(..., description="Format: kind:id", pattern=r"^[a-zA-Z0-9_\-]+:[a-zA-Z0-9_\-]+$"),
     limit: int = Query(50, le=100),
     cursor: Optional[str] = None,
     db: AsyncSession = Depends(get_db_with_context),
     # tenant_id: str = Depends(get_current_tenant_id) # Implicit via RLS
 ):
-    try:
-        kind, entity_id = entity.split(":", 1)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Entity must be in format kind:id")
+    kind, entity_id = entity.split(":", 1)
 
     # Use EventEntity to drive the sort order efficiently using the index
     # (tenant_id, entity_kind, entity_id, occurred_at desc, event_id desc)
@@ -180,8 +177,8 @@ async def get_event(
 async def list_events(
     limit: int = Query(50, le=100),
     cursor: Optional[str] = None,
-    type: Optional[str] = None,
-    actor_id: Optional[str] = None,
+    type: Optional[str] = Query(None, min_length=1, pattern=r"^[a-zA-Z0-9_\-\.]+$"),
+    actor_id: Optional[str] = Query(None, min_length=1, pattern=r"^[a-zA-Z0-9_\-]+$"),
     db: AsyncSession = Depends(get_db_with_context),
     # tenant_id: str = Depends(get_current_tenant_id)
 ):
