@@ -11,7 +11,7 @@
 - [x] **Task: Tune Database Connection Pooling** [9569ed1]
     - [x] Update `app/database.py` to configure `asyncpg` pool size and timeouts with optimized defaults.
     - [x] Verify database connection stability under load.
-- [ ] **Task: Conductor - User Manual Verification 'Phase 1: Performance Optimization & Reliability Tuning' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Phase 1: Performance Optimization & Reliability Tuning' (Protocol in workflow.md)** [checkpoint: 421b808]
 
 ## Phase 2: Enhanced System Observability & Health Checks
 - [ ] **Task: Write Tests for Health Checks and Logging**
