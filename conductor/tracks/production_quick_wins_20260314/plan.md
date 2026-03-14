@@ -29,9 +29,9 @@
 - [x] **Task: Conductor - User Manual Verification 'Phase 2: Enhanced System Observability & Health Checks' (Protocol in workflow.md)** [checkpoint: 1cd6046]
 
 ## Phase 3: Distributed Tracing & Initial Instrumentation
-- [ ] **Task: Write Tests for OpenTelemetry Scaffolding**
-    - [ ] Define test cases in `tests/test_observability_enhanced.py` to check for trace context propagation.
-    - [ ] Ensure that a trace ID is present in the outgoing response headers.
+- [x] **Task: Write Tests for OpenTelemetry Scaffolding** [a309ba3]
+    - [x] Define test cases in `tests/test_observability_enhanced.py` to check for trace context propagation.
+    - [x] Ensure that a trace ID is present in the outgoing response headers.
 - [ ] **Task: Implement OpenTelemetry Instrumentation**
     - [ ] Install and configure OpenTelemetry SDK and instrumentation for FastAPI and SQLAlchemy.
     - [ ] Set up a basic OTLP exporter for trace data.
