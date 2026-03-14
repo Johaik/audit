@@ -11,14 +11,12 @@ This track implements the **Agentic Development Life Cycle (ADLC)** by integrati
   * **Continuous Security Analysis:** Implement automated security scans to detect vulnerabilities in audit logic and infrastructure.
   * **Documentation Synchronization:** Automatically sync `product.md`, `spec.md`, and other project docs with the latest code changes.
   * **Auto-Remediation:** Configure Jules to automatically attempt fixes for bugs or test failures identified in the CI pipeline.
-* **GitHub Actions Workflow:**
-  * **Triggers:**
-    * Execution on every **Pull Request**.
-    * Execution on every **Push to master**.
-    * **Manual triggers** for ad-hoc runs.
-  * **Scheduled Tasks:**
-    * **Nightly:** Full regression test suite execution and deep security checks.
-    * **Weekly:** Package update checks and dependency vulnerability scans using pip-audit.
+*   **Modular GitHub Actions Workflows:**
+    *   **CI Pipeline (`adlc-ci.yml`):** Runs on every Push to master. Executes unit/integration tests, coverage enforcement, and auto-remediation.
+    *   **Security Analysis (`adlc-security.yml`):** Runs nightly. Executes deep security scans using Jules.
+    *   **Auto-Doc Sync (`adlc-doc-sync.yml`):** Runs weekly. Synchronizes `product.md` and spec files using Jules.
+    *   **Dependabot:** Configured for weekly automated dependency updates and security patches.
+
 * **CI Environment:**
   * The workflow will use **Docker Compose** to spin up isolated PostgreSQL (with RLS) and Keycloak instances for every run, ensuring a consistent and reproducible testing environment.
 * **Secrets Management:**
