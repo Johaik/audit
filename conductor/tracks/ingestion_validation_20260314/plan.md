@@ -13,7 +13,7 @@
     - [x] Run the new tests and verify they pass.
 - [x] **Task: Conductor - User Manual Verification 'Phase 1: Preparation & Schema Refinement' (Protocol in workflow.md)** [checkpoint: 1923890]
 
-## Phase 2: API Integration & Final Verification
+## Phase 2: API Integration & Final Verification [checkpoint: c544a1d]
 - [x] **Task: Update Ingestion Route** [26b20b1]
     - [x] Review `app/api/endpoints.py` to ensure it's using the refined schemas.
     - [x] Update any manual validation logic that is now handled by Pydantic.
@@ -21,4 +21,4 @@
     - [x] Run all unit tests: `pytest tests/test_ingestion_validation.py`.
     - [x] Run existing integration tests: `pytest tests/test_api.py`.
     - [x] Ensure all tests pass.
-- [~] **Task: Conductor - User Manual Verification 'Phase 2: API Integration & Final Verification' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Phase 2: API Integration & Final Verification' (Protocol in workflow.md)** [checkpoint: c544a1d]
