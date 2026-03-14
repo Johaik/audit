@@ -42,17 +42,34 @@ jobs:
       - name: Start services
         run: docker compose up -d
 
+      - name: Check container status
+        if: always()
+        run: docker compose ps
+
       - name: Wait for Postgres
         run: |
-          until docker exec audit-db-1 pg_isready -U audit_admin -d audit_db; do
-            echo "Waiting for Postgres..."
+          for i in {1..30}; do
+            if docker compose exec -T db pg_isready -U audit_admin -d audit_db; then
+              echo "Postgres is ready!"
+              exit 0
+            fi
+            echo "Waiting for Postgres... ($i/30)"
             sleep 2
           done
+          echo "Postgres failed to become ready"
+          docker compose logs db
+          exit 1
 
       - name: Wait for Keycloak
         run: |
-          until curl -s http://localhost:8080/health/live | grep -q "UP" || curl -s http://localhost:8080/health | grep -q "UP"; do
-            echo "Waiting for Keycloak..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8080/health/live | grep -q "UP" || curl -s http://localhost:8080/health | grep -q "UP"; then
+              echo "Keycloak is ready!"
+              exit 0
+            fi
+            echo "Waiting for Keycloak... ($i/30)"
             sleep 5
           done
-        # Note: Keycloak 24+ uses /health/live if enabled, otherwise check standard endpoint
+          echo "Keycloak failed to become ready"
+          docker compose logs keycloak
+          exit 1
