@@ -1,0 +1,44 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.10.13, pytest-9.0.2, pluggy-1.6.0
+rootdir: /Users/johaik/Desktop/myStupidProjects/audit
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.9.0, asyncio-1.3.0, cov-7.0.0
+asyncio: mode=auto, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 44 items
+
+tests/test_admin_and_auth.py .........                                   [ 20%]
+tests/test_api.py ............                                           [ 47%]
+tests/test_auth_keycloak.py ...                                          [ 54%]
+tests/test_deep_idempotency_tenants.py ....                              [ 63%]
+tests/test_deep_read_ops.py .....                                        [ 75%]
+tests/test_ingestion_validation.py ....                                  [ 84%]
+tests/test_observability_enhanced.py ..F                                 [ 90%]
+tests/test_performance_refactor.py ....                                  [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_tracing_context_propagation _______________________
+
+client = <httpx.AsyncClient object at 0x10dba2e00>
+auth_headers = <function auth_headers.<locals>._headers at 0x10dacf910>
+
+    @pytest.mark.anyio
+    async def test_tracing_context_propagation(client: AsyncClient, auth_headers):
+        """
+        Test that trace ID is present in response headers and propagated.
+        This test expects OpenTelemetry instrumentation to be active.
+        """
+        # Use a traced endpoint (not health)
+        response = await client.get("/v1/events", headers=auth_headers("tenant-trace"))
+        assert response.status_code == 200
+    
+        # Check for trace ID in headers.
+>       assert "X-Trace-Id" in response.headers or "traceparent" in response.headers
+E       AssertionError: assert ('X-Trace-Id' in Headers({'content-length': '32', 'content-type': 'application/json'}) or 'traceparent' in Headers({'content-length': '32', 'content-type': 'application/json'}))
+E        +  where Headers({'content-length': '32', 'content-type': 'application/json'}) = <Response [200 OK]>.headers
+E        +  and   Headers({'content-length': '32', 'content-type': 'application/json'}) = <Response [200 OK]>.headers
+
+tests/test_observability_enhanced.py:60: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_observability_enhanced.py::test_tracing_context_propagation
+========================= 1 failed, 43 passed in 6.03s =========================

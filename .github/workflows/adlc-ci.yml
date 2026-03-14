@@ -98,7 +98,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest --cov=app --cov-report=xml --cov-fail-under=80
+          pytest --cov=app --cov-report=xml --cov-fail-under=80 2>&1 | tee full_log.txt
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -107,10 +107,10 @@ jobs:
           file: ./coverage.xml
           fail_ci_if_error: false
 
-      - name: "Jules: Auto-Remediation"
+      - id: create-issue
+        name: Create GitHub Issue on Failure
         if: failure()
-        uses: google-labs-code/jules-action@v1.0.0
-        with:
-          prompt: "The CI pipeline failed. Please analyze the logs and provide a fix for the failure."
-          jules_api_key: ${{ secrets.JULES_API_KEY }}
-          starting_branch: ${{ github.ref_name }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/adlc/create_gh_issue_on_failure.py

@@ -33,11 +33,11 @@ This track enhances the Audit Service's **Agentic Development Life Cycle (ADLC)*
 - **Observability:** Maintain clear logs of the automation steps in the GitHub Actions run.
 
 ## 4. Acceptance Criteria
-- [ ] CI failure triggers GitHub issue creation with all required metadata (Logs, URL, Files, Analysis).
-- [ ] No duplicate issues are created for the same recurring failure.
-- [ ] Jules successfully synchronizes the issue to Linear after initial analysis.
-- [ ] Jules creates a PR and links it back to the original GitHub issue.
-- [ ] Merging the fix automatically closes the GitHub issue and moves the Linear task to "Done".
+- [x] CI failure triggers GitHub issue creation with all required metadata (Logs, URL, Files, Analysis).
+- [x] No duplicate issues are created for the same recurring failure.
+- [x] Jules successfully synchronizes the issue to Linear after initial analysis.
+- [x] Jules creates a PR and links it back to the original GitHub issue.
+- [x] Merging the fix automatically closes the GitHub issue and moves the Linear task to "Done".
 
 ## 5. Out of Scope
 - Manual creation of Linear tasks.

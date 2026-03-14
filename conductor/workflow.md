@@ -9,6 +9,13 @@
 5. **User Experience First:** Every decision should prioritize user experience
 6. **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use `CI=true` for watch-mode tools (tests, linters) to ensure single execution.
 
+## Track Initialization and Tracking (Linear Integration)
+
+**AI AGENT INSTRUCTION:** 
+When a user requests to open or create a new "track" (via the conductor extension or manually):
+1. **Create a Linear Ticket:** You must automatically use the Linear MCP server to create a new issue. The ticket title should be the track's name, and the description should contain the full details, specifications, and goals of the track.
+2. **Update the Ticket:** As work progresses on the track (e.g., tasks are marked as in-progress or completed), you must update the corresponding Linear ticket to reflect the current status, adding comments or updating the description as needed.
+
 ## Task Workflow
 
 All tasks follow a strict lifecycle:

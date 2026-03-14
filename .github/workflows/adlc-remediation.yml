@@ -1,0 +1,39 @@
+name: ADLC - Auto-Remediation Workflow
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Every hour
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+
+jobs:
+  remediate:
+    if: github.event.label.name == 'adlc-auto-remediation' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: jules
+    
+    env:
+      LINEAR_TOKEN: ${{ secrets.LINEAR_TOKEN }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Jules: Analyze & Remediate"
+        uses: google-labs-code/jules-action@v1.0.0
+        with:
+          prompt: |
+            Please check the GitHub repository Johaik/audit for open issues with the label 'adlc-auto-remediation'.
+            For each such issue:
+            1. If it doesn't have a corresponding Linear issue yet, create one in Linear using your Linear MCP integration. Link the Linear task to the GitHub issue.
+            2. Analyze the failure described in the GitHub issue.
+            3. Implement a fix for the failure.
+            4. Run the project tests to verify the fix.
+            5. Create a Pull Request with the fix and link it back to the GitHub issue.
+               - CRITICAL: Ensure the PR body contains the string "Fixes #GH_ISSUE_NUMBER" where GH_ISSUE_NUMBER is the number of the issue being fixed. This ensures the issue is automatically closed when the PR is merged.
+            6. Add a comment to the GitHub issue when the Linear task is created and when the PR is submitted.
+          jules_api_key: ${{ secrets.JULES_API_KEY }}
+          starting_branch: master
