@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-import logging
+import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import verify_admin_key, get_idp_provider
 from app.schemas.admin import TenantCreate, TenantResponse
@@ -8,7 +8,7 @@ from app.database import get_db
 from app.core.auth.idp import IdPProvider
 import uuid
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 

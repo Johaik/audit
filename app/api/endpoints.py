@@ -9,13 +9,14 @@ from datetime import datetime
 import uuid
 import hashlib
 import json
-import logging
+import structlog
 
 from app.models import Event, EventEntity
 from app.schemas.common import EventCreate, EventRead, TimelineResponse
 from app.api.deps import get_db_with_context, get_current_tenant_id
 from app.api.utils import parse_cursor
 
+logger = structlog.get_logger(__name__)
 router = APIRouter()
 
 def calculate_hash(event_in: EventCreate) -> str:
@@ -34,6 +35,13 @@ async def create_event(
 ):
     # Calculate hash if not provided
     event_hash = event_in.hash or calculate_hash(event_in)
+    
+    log = logger.bind(
+        tenant_id=tenant_id, 
+        idempotency_key=event_in.idempotency_key,
+        event_type=event_in.type
+    )
+    log.info("Ingesting event")
 
     # Use ON CONFLICT DO NOTHING for performance and to avoid nested transaction overhead
     event_id = uuid.uuid4()

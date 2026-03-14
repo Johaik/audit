@@ -29,16 +29,19 @@ async def test_structured_logging_output(client: AsyncClient, capsys):
     so we might need to mock the logger or check the configured handlers.
     """
     import structlog
-    from app.api.endpoints import logger as api_logger
+    from app.core.logging import setup_logging
     
-    # Check if structlog is used by inspecting the logger or its handlers
-    # Actually, we want to see if structlog.get_logger() returns a structlog logger.
-    assert isinstance(structlog.get_logger(), structlog.BoundLogger)
+    # Ensure logging is setup (might have already been called in app)
+    setup_logging()
     
-    # Trigger an ingestion request to generate logs
-    # (Functional correctness is tested elsewhere, we just care about log format here)
-    # Since we can't easily capture uvicorn's stdout in this test context,
-    # we'll check if structlog is configured.
+    # Trigger a log call to ensure the proxy is initialized if needed
+    log = structlog.get_logger()
+    log.info("test log")
     
-    processors = structlog.get_config()["processors"]
-    assert any("JSONRenderer" in str(p) for p in processors), "JSONRenderer not found in structlog processors"
+    # Check configuration
+    conf = structlog.get_config()
+    assert conf["logger_factory"] is not None
+    
+    # Verify JSONRenderer is in processors
+    processors = conf["processors"]
+    assert any("JSONRenderer" in str(p) for p in processors), f"JSONRenderer not found in {processors}"

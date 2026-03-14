@@ -3,13 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 import time
 import asyncio
-import logging
+import structlog
 from typing import Dict, Any
 
 from app.api.deps import get_db, get_idp_provider
 from app.core.auth.idp import IdPProvider
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 router = APIRouter(tags=["observability"])
 
