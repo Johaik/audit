@@ -75,7 +75,23 @@ class KeycloakProvider(IdPProvider):
             }
         )
 
-        # 3. Get Client Secret
+        # 3. Add Protocol Mapper for 'aud' (Audience)
+        self.keycloak_admin.add_mapper_to_client(
+            client_id=client_uuid,
+            payload={
+                "name": "audience-mapper",
+                "protocol": "openid-connect",
+                "protocolMapper": "oidc-audience-mapper",
+                "consentRequired": False,
+                "config": {
+                    "included.client.audience": settings.KEYCLOAK_AUDIENCE,
+                    "id.token.claim": "false",
+                    "access.token.claim": "true"
+                }
+            }
+        )
+
+        # 4. Get Client Secret
         # regenerate_client_secret returns dict with 'value'
         secret_data = self.keycloak_admin.get_client_secrets(client_uuid)
         client_secret = secret_data.get('value')
