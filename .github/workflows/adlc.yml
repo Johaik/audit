@@ -17,6 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: jules
     
+    defaults:
+      run:
+        shell: bash
+
     env:
       POSTGRES_USER: audit_admin
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
@@ -42,6 +46,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Jules CLI
+        run: npm install -g @google/jules
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -62,7 +74,7 @@ jobs:
 
       - name: Wait for Postgres
         run: |
-          for i in {1..30}; do
+          for ((i=1;i<=30;i++)); do
             if docker compose exec -T db pg_isready -U audit_admin -d audit_db; then
               echo "Postgres is ready!"
               exit 0
@@ -76,8 +88,8 @@ jobs:
 
       - name: Wait for Keycloak
         run: |
-          for i in {1..30}; do
-            if curl -s http://localhost:8080/health/live | grep -q "UP" || curl -s http://localhost:8080/health | grep -q "UP"; do
+          for ((i=1;i<=30;i++)); do
+            if curl -s http://localhost:8080/health/live | grep -q "UP" || curl -s http://localhost:8080/health | grep -q "UP"; then
               echo "Keycloak is ready!"
               exit 0
             fi
@@ -99,14 +111,6 @@ jobs:
           file: ./coverage.xml
           fail_ci_if_error: false
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Jules CLI
-        run: npm install -g @google/jules
-
       - name: "Jules: Security Analysis"
         if: github.event_name == 'pull_request' || github.event_name == 'schedule'
         run: jules new "Analyze the codebase for security vulnerabilities and compliance with audit standards."
@@ -120,6 +124,5 @@ jobs:
         run: jules new "Update unit and integration tests to cover the latest changes and maintain >80% coverage."
 
       - name: "Jules: Auto-Remediation"
-        if: failure() && (github.event_name == 'push' || github.event_name == 'pull_request')
+        if: failure()
         run: jules new "The CI pipeline failed. Please analyze the logs and provide a fix for the failure."
-
