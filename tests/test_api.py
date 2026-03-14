@@ -7,7 +7,9 @@ import uuid
 async def test_health_check(client: AsyncClient):
     response = await client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+    data = response.json()
+    assert data["status"] == "ok"
+    assert "components" in data
 
 @pytest.mark.anyio
 async def test_create_event(client: AsyncClient, auth_headers):
