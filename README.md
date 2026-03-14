@@ -18,6 +18,7 @@ This project provides a centralized service for ingesting, storing, and querying
 *   **Idempotency:** `idempotency_key` ensures exactly-once processing for event ingestion.
 *   **Integrity:** SHA-256 content hashing for event verification.
 *   **High Performance:** Async I/O (FastAPI + AsyncPG) and optimized database indexes.
+*   **Agentic CI/CD (ADLC):** Integrated with Google Jules and GitHub Actions for automated testing, documentation generation, and auto-remediation.
 
 ## 3. Architecture & Design
 
@@ -63,6 +64,7 @@ graph TD
 ## 4. Repository Structure
 
 ```
+├── .github/workflows/  # GitHub Actions CI/CD pipelines
 ├── app/
 │   ├── api/            # Route handlers (Ingestion, Timeline, Admin)
 │   ├── core/           # Auth logic, Keycloak integration
@@ -239,6 +241,13 @@ Locust is used for load testing.
 # Start Locust
 locust -f load_tests/locustfile.py
 ```
+
+### Agentic Development Life Cycle (ADLC)
+This project utilizes **Google Jules** integrated with **GitHub Actions** for robust CI/CD:
+*   **Automated Maintenance:** Jules generates/updates tests and synchronizes documentation automatically.
+*   **Continuous Security:** Automated security analysis runs on every PR, with deep checks nightly/weekly.
+*   **Auto-Remediation:** Jules attempts to automatically fix bugs or test failures found during the pipeline execution.
+*   **CI Environment:** All tests execute against an isolated Docker Compose environment containing PostgreSQL and Keycloak.
 
 ## 9. Operational Notes
 
