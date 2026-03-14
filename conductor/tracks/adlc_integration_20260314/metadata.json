@@ -1,0 +1,8 @@
+{
+  "track_id": "adlc_integration_20260314",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-03-14T12:00:00Z",
+  "updated_at": "2026-03-14T12:00:00Z",
+  "description": "implement of ADLC using google jules and github actions"
+}
