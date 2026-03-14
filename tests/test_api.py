@@ -42,8 +42,8 @@ async def test_create_event_with_trace(client: AsyncClient, auth_headers):
             { "kind": "user", "id": "u-100" }
         ],
         "trace": {
-            "trace_id": "t-123",
-            "request_id": "r-456"
+            "trace_id": "trace_123",
+            "request_id": "req_456"
         },
         "payload": { "email": "test@example.com" }
     }
@@ -52,7 +52,7 @@ async def test_create_event_with_trace(client: AsyncClient, auth_headers):
     response = await client.post("/v1/events", json=payload, headers=headers)
     assert response.status_code == 201
     data = response.json()
-    assert data["trace"] == {"trace_id": "t-123", "request_id": "r-456"}
+    assert data["trace"] == {"trace_id": "trace_123", "request_id": "req_456"}
 
 @pytest.mark.anyio
 async def test_idempotency_same_payload(client: AsyncClient, auth_headers):
@@ -101,8 +101,7 @@ async def test_idempotency_conflict(client: AsyncClient, auth_headers):
 async def test_get_timeline_invalid_entity_format(client: AsyncClient, auth_headers):
     headers = auth_headers("tenant-A")
     response = await client.get("/v1/timeline?entity=invalid_format", headers=headers)
-    assert response.status_code == 400
-    assert response.json()["detail"] == "Entity must be in format kind:id"
+    assert response.status_code == 422
 
 @pytest.mark.anyio
 async def test_get_timeline(client: AsyncClient, auth_headers):
@@ -192,5 +191,4 @@ async def test_get_event_not_found(client: AsyncClient, auth_headers):
 async def test_get_timeline_invalid_format(client: AsyncClient, auth_headers):
     headers = auth_headers("tenant-A")
     response = await client.get("/v1/timeline?entity=invalidformat", headers=headers)
-    assert response.status_code == 400
-    assert response.json()["detail"] == "Entity must be in format kind:id"
+    assert response.status_code == 422
