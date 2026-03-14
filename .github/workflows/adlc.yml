@@ -113,16 +113,16 @@ jobs:
 
       - name: "Jules: Security Analysis"
         if: github.event_name == 'pull_request' || github.event_name == 'schedule'
-        run: jules new "Analyze the codebase for security vulnerabilities and compliance with audit standards."
+        run: jules remote new --repo ${{ github.repository }} --session "Analyze the codebase for security vulnerabilities and compliance with audit standards."
 
       - name: "Jules: Auto-Doc Sync"
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        run: jules new "Synchronize product.md and spec files with the latest code changes."
+        run: jules remote new --repo ${{ github.repository }} --session "Synchronize product.md and spec files with the latest code changes."
 
       - name: "Jules: Test Maintenance"
         if: github.event_name == 'pull_request'
-        run: jules new "Update unit and integration tests to cover the latest changes and maintain >80% coverage."
+        run: jules remote new --repo ${{ github.repository }} --session "Update unit and integration tests to cover the latest changes and maintain >80% coverage."
 
       - name: "Jules: Auto-Remediation"
         if: failure()
-        run: jules new "The CI pipeline failed. Please analyze the logs and provide a fix for the failure."
+        run: jules remote new --repo ${{ github.repository }} --session "The CI pipeline failed. Please analyze the logs and provide a fix for the failure."
