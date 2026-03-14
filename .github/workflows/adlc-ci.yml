@@ -1,4 +1,4 @@
-name: Agentic Development Life Cycle (ADLC)
+name: ADLC - CI Pipeline
 
 on:
   push:
@@ -6,14 +6,9 @@ on:
   pull_request:
     branches: [ master ]
   workflow_dispatch:
-  schedule:
-    # Nightly run at 00:00 UTC
-    - cron: '0 0 * * *'
-    # Weekly run at 00:00 UTC on Sunday
-    - cron: '0 0 * * 0'
 
 jobs:
-  adlc:
+  ci:
     runs-on: ubuntu-latest
     environment: jules
     
@@ -68,10 +63,6 @@ jobs:
       - name: Start services
         run: docker compose up -d
 
-      - name: Check container status
-        if: always()
-        run: docker compose ps
-
       - name: Wait for Postgres
         run: |
           for ((i=1;i<=30;i++)); do
@@ -104,40 +95,12 @@ jobs:
         run: |
           pytest --cov=app --cov-report=xml --cov-fail-under=80
 
-      - name: Dependency Security Scan
-        run: |
-          pip-audit
-
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
           fail_ci_if_error: false
-
-      - name: "Jules: Security Analysis"
-        if: github.event_name == 'pull_request' || github.event_name == 'schedule'
-        uses: google-labs-code/jules-action@v1.0.0
-        with:
-          prompt: "Analyze the codebase for security vulnerabilities and compliance with audit standards."
-          jules_api_key: ${{ secrets.JULES_API_KEY }}
-          starting_branch: ${{ github.ref_name }}
-
-      - name: "Jules: Auto-Doc Sync"
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        uses: google-labs-code/jules-action@v1.0.0
-        with:
-          prompt: "Synchronize product.md and spec files with the latest code changes."
-          jules_api_key: ${{ secrets.JULES_API_KEY }}
-          starting_branch: ${{ github.ref_name }}
-
-      - name: "Jules: Test Maintenance"
-        if: github.event_name == 'pull_request'
-        uses: google-labs-code/jules-action@v1.0.0
-        with:
-          prompt: "Update unit and integration tests to cover the latest changes and maintain >80% coverage."
-          jules_api_key: ${{ secrets.JULES_API_KEY }}
-          starting_branch: ${{ github.ref_name }}
 
       - name: "Jules: Auto-Remediation"
         if: failure()

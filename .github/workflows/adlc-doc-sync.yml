@@ -1,0 +1,32 @@
+name: ADLC - Auto-Doc Sync
+
+on:
+  schedule:
+    # Weekly run at 00:00 UTC on Sunday
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  doc-sync:
+    runs-on: ubuntu-latest
+    environment: jules
+    
+    defaults:
+      run:
+        shell: bash
+
+    env:
+      JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Jules: Auto-Doc Sync"
+        uses: google-labs-code/jules-action@v1.0.0
+        with:
+          prompt: "Synchronize product.md and spec files with the latest code changes."
+          jules_api_key: ${{ secrets.JULES_API_KEY }}
+          starting_branch: ${{ github.ref_name }}
