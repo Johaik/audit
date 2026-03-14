@@ -12,11 +12,11 @@
 - [x] **Task: Conductor - User Manual Verification 'Phase 1: Pipeline Scaffolding' (Protocol in workflow.md)** [checkpoint: c432de7]
 
 ## Phase 2: Core Testing & Jules Integration
-- [~] **Task: Implement Automated Test Execution**
-    - [ ] Add steps to install dependencies from `requirements.txt`.
-    - [ ] Configure `pytest` execution within the CI environment.
-    - [ ] Add code coverage reporting and enforcement (>80%).
-- [ ] **Task: Integrate Google Jules for Code Quality**
+- [x] **Task: Implement Automated Test Execution** [dc137e4]
+    - [x] Add steps to install dependencies from `requirements.txt`.
+    - [x] Configure `pytest` execution within the CI environment.
+    - [x] Add code coverage reporting and enforcement (>80%).
+- [~] **Task: Integrate Google Jules for Code Quality**
     - [ ] Add Jules steps for automated unit test generation and updates.
     - [ ] Implement Jules-powered documentation sync for `product.md` and `spec.md`.
     - [ ] Configure Jules auto-remediation for detected CI failures.
