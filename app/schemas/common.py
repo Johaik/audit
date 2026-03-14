@@ -3,27 +3,29 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 from uuid import UUID
 
+ID_REGEX = r"^[a-zA-Z0-9_\-]+$"
+
 class Actor(BaseModel):
-    kind: str
-    id: str
+    kind: str = Field(..., min_length=1, pattern=ID_REGEX)
+    id: str = Field(..., min_length=1, pattern=ID_REGEX)
 
 class Entity(BaseModel):
-    kind: str
-    id: str
+    kind: str = Field(..., min_length=1, pattern=ID_REGEX)
+    id: str = Field(..., min_length=1, pattern=ID_REGEX)
 
 class EntityRead(BaseModel):
-    kind: str = Field(validation_alias="entity_kind")
-    id: str = Field(validation_alias="entity_id")
+    kind: str = Field(validation_alias="entity_kind", pattern=ID_REGEX)
+    id: str = Field(validation_alias="entity_id", pattern=ID_REGEX)
 
     class Config:
         from_attributes = True
 
 class Trace(BaseModel):
-    trace_id: str
-    request_id: str
+    trace_id: str = Field(..., pattern=ID_REGEX)
+    request_id: str = Field(..., pattern=ID_REGEX)
 
 class EventBase(BaseModel):
-    type: str
+    type: str = Field(..., min_length=1, pattern=r"^[a-zA-Z0-9_\-\.]+$")
     actor: Actor
     entities: List[Entity]
     trace: Optional[Trace] = None
