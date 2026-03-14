@@ -12,10 +12,9 @@ async def test_health_check_detailed(client: AsyncClient):
     This test expects more.
     """
     response = await client.get("/health")
-    assert response.status_code == 200
     data = response.json()
-    assert "status" in data
-    assert data["status"] == "ok"
+    assert response.status_code == 200, f"Status code: {response.status_code}, data: {data}"
+    assert data["status"] == "ok", f"Health check failed: {data}"
     assert "components" in data
     assert "postgres" in data["components"]
     assert "keycloak" in data["components"]

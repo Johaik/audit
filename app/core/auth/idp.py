@@ -44,3 +44,10 @@ class IdPProvider(ABC):
         """
         pass
 
+    @abstractmethod
+    def check_health(self) -> Dict[str, Any]:
+        """
+        Perform a health check on the IdP service.
+        """
+        pass
+

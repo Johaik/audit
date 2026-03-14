@@ -36,3 +36,6 @@ class MockIdPProvider(IdPProvider):
             "exp": 9999999999
         }
         return token
+
+    def check_health(self) -> Dict[str, Any]:
+        return {"status": "up"}

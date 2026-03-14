@@ -138,3 +138,14 @@ class KeycloakProvider(IdPProvider):
             return decoded
         except jwt.PyJWTError as e:
             raise ValueError(f"Invalid token: {str(e)}")
+
+    def check_health(self) -> Dict[str, Any]:
+        """
+        Perform a health check on the Keycloak service.
+        """
+        try:
+            # Synchronous call to well_known
+            self.keycloak_openid.well_known()
+            return {"status": "up"}
+        except Exception as e:
+            return {"status": "down", "error": str(e)}
