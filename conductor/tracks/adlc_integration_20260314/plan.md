@@ -5,10 +5,10 @@
     - [x] Create `.github/workflows/adlc.yml`.
     - [x] Define basic metadata (name, triggers for PR, push, manual).
     - [x] Set up the runner environment (ubuntu-latest).
-- [ ] **Task: Configure CI Service Environment**
-    - [ ] Integrate `docker-compose.yml` into the workflow to spin up Postgres and Keycloak.
-    - [ ] Implement health checks in the workflow to ensure services are ready before testing.
-    - [ ] Map GitHub Secrets to environment variables within the runner.
+- [x] **Task: Configure CI Service Environment** [1f58f0b]
+    - [x] Integrate `docker-compose.yml` into the workflow to spin up Postgres and Keycloak.
+    - [x] Implement health checks in the workflow to ensure services are ready before testing.
+    - [x] Map GitHub Secrets to environment variables within the runner.
 - [ ] **Task: Conductor - User Manual Verification 'Phase 1: Pipeline Scaffolding' (Protocol in workflow.md)**
 
 ## Phase 2: Core Testing & Jules Integration
