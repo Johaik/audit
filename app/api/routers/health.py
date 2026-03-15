@@ -20,8 +20,8 @@ async def check_postgres(db: AsyncSession) -> Dict[str, Any]:
         latency = (time.time() - start_time) * 1000
         return {"status": "up", "latency_ms": round(latency, 2)}
     except Exception as e:
-        logger.error(f"Postgres health check failed: {e}")
-        return {"status": "down", "error": str(e)}
+        logger.exception("Postgres health check failed")
+        return {"status": "down", "error": "Service unavailable"}
 
 async def check_keycloak(idp: IdPProvider) -> Dict[str, Any]:
     start_time = time.time()
@@ -34,8 +34,8 @@ async def check_keycloak(idp: IdPProvider) -> Dict[str, Any]:
             res["latency_ms"] = round(latency, 2)
         return res
     except Exception as e:
-        logger.error(f"Keycloak health check failed: {e}")
-        return {"status": "down", "error": str(e)}
+        logger.exception("Keycloak health check failed")
+        return {"status": "down", "error": "Service unavailable"}
 
 @router.get("/health")
 async def health_check(
