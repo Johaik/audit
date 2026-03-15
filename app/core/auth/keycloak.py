@@ -148,4 +148,4 @@ class KeycloakProvider(IdPProvider):
             self.keycloak_openid.well_known()
             return {"status": "up"}
         except Exception as e:
-            return {"status": "down", "error": str(e)}
+            return {"status": "down", "error": "Service unavailable"}
