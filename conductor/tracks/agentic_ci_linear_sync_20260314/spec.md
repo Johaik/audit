@@ -16,6 +16,7 @@ This track enhances the Audit Service's **Agentic Development Life Cycle (ADLC)*
     - List of files changed in the triggering commit.
     - AI-generated root cause analysis (provided by Jules or a specialized script).
 - **Labels:** Automatically apply `bug` and `adlc-auto-remediation` labels.
+- **Local Fallback:** The script supports local execution by falling back to `git diff HEAD~1` for changed files and "local" signatures when CI environment variables (e.g., `GITHUB_RUN_ID`, `GITHUB_SHA`) are absent.
 
 ### 2.2 Jules & Linear Synchronization
 - **Trigger:** Jules will monitor GitHub issues with the `adlc-auto-remediation` label.
@@ -29,7 +30,7 @@ This track enhances the Audit Service's **Agentic Development Life Cycle (ADLC)*
 
 ## 3. Non-Functional Requirements
 - **Efficiency:** Deduplication must be robust to prevent "flapping" or duplicate ticket spam.
-- **Security:** Use GitHub and Linear tokens securely via repository secrets.
+- **Security:** Use GitHub (`GH_TOKEN`) and Linear tokens securely via repository secrets. Note: A custom `GH_TOKEN` is used to allow the script to trigger other workflows, overcoming limitations of the default `GITHUB_TOKEN`.
 - **Observability:** Maintain clear logs of the automation steps in the GitHub Actions run.
 
 ## 4. Acceptance Criteria
