@@ -1,7 +1,6 @@
 import structlog
 import logging
 import sys
-from typing import Any, Dict
 
 def setup_logging():
     # standard python logging configuration
